@@ -1,0 +1,35 @@
+.btn {
+  display: inline-block;
+  padding: 16px 32px;
+  border: 1px solid var(--charcoal);
+  background: transparent;
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  transition: all 0.4s var(--ease-fabric);
+}
+
+.primary {
+  background: var(--charcoal);
+  color: var(--pearl-white);
+}
+
+.primary:hover {
+  background: var(--soft-gold);
+  border-color: var(--soft-gold);
+}
+
+.secondary {
+  color: var(--charcoal);
+}
+
+.secondary:hover {
+  background: var(--charcoal);
+  color: var(--pearl-white);
+}
+
+.block {
+  width: 100%;
+  text-align: center;
+}

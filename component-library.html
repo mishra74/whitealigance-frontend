@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>WHITE ELEGANCE 24 — Component Library</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;0,9..144,500;0,9..144,600;1,9..144,400;1,9..144,500&family=Instrument+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+<style>
+  :root{
+    --pearl-white:#FAF9F6; --ivory:#F5F0E6; --cream:#EFE6D8; --warm-beige:#D9C7AE;
+    --champagne:#C9A876; --soft-gold:#B8935A; --muted-bronze:#8B6F47;
+    --warm-gray:#6B6560; --charcoal:#2B2825;
+    --status-success:#B8935A; --status-neutral:#8B6F47; --status-alert:#A9663F;
+    --font-display:'Fraunces',serif; --font-body:'Instrument Sans',sans-serif;
+    --ease-fabric: cubic-bezier(0.22,1,0.36,1);
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{background:var(--pearl-white); color:var(--charcoal); font-family:var(--font-body); line-height:1.6; -webkit-font-smoothing:antialiased;}
+  a{color:inherit; text-decoration:none;}
+  button{font-family:var(--font-body); cursor:pointer;}
+
+  .wrap{max-width:1240px; margin:0 auto; padding:0 56px;}
+  .eyebrow{font-size:.7rem; font-weight:600; letter-spacing:.2em; text-transform:uppercase; color:var(--muted-bronze); display:block;}
+  .thread{width:56px; height:1px; background:var(--soft-gold); margin:16px 0 0;}
+
+  .cover{text-align:center; padding:100px 56px 70px; border-bottom:1px solid var(--cream);}
+  .cover .thread{margin:16px auto;}
+  .cover h1{font-family:var(--font-display); font-weight:400; font-size:clamp(2.2rem,5vw,3.6rem);}
+  .cover p{color:var(--warm-gray); max-width:520px; margin:16px auto 0;}
+
+  .doc-section{padding:90px 56px; border-bottom:1px solid var(--cream);}
+  .doc-section:last-child{border-bottom:none;}
+  .doc-head{margin-bottom:48px;}
+  .doc-head h2{font-family:var(--font-display); font-weight:400; font-size:clamp(1.7rem,3vw,2.4rem); margin-top:10px;}
+  .doc-head p{color:var(--warm-gray); max-width:560px; margin-top:10px; font-size:.92rem;}
+
+  .demo-row{display:flex; gap:36px; flex-wrap:wrap; align-items:flex-start; margin-bottom:40px;}
+  .demo-block{display:flex; flex-direction:column; gap:12px; align-items:flex-start;}
+  .state-label{font-size:.66rem; letter-spacing:.12em; text-transform:uppercase; color:var(--warm-gray);}
+
+  /* ===== component styles (mirrors Phase 2-4) ===== */
+  .btn{font-size:.72rem; font-weight:600; letter-spacing:.14em; text-transform:uppercase; padding:16px 32px; border:1px solid var(--charcoal); background:transparent; transition:all .4s var(--ease-fabric); display:inline-block;}
+  .btn-primary{background:var(--charcoal); color:var(--pearl-white);}
+  .btn-primary:hover{background:var(--soft-gold); border-color:var(--soft-gold);}
+  .btn-secondary{color:var(--charcoal);}
+  .btn-secondary:hover{background:var(--charcoal); color:var(--pearl-white);}
+  .btn-ghost{border:none; padding:4px 0; position:relative;}
+  .btn-ghost::after{content:''; position:absolute; left:0; bottom:0; width:100%; height:1px; background:var(--soft-gold); transform:scaleX(.3); transition:transform .4s var(--ease-fabric);}
+  .btn-ghost:hover::after{transform:scaleX(1);}
+  .btn-disabled{opacity:.35; pointer-events:none; border-color:var(--warm-gray); color:var(--warm-gray);}
+
+  .field{margin-bottom:0; max-width:260px;}
+  .field label{font-size:.66rem; letter-spacing:.14em; text-transform:uppercase; color:var(--warm-gray); display:block; margin-bottom:8px;}
+  .field input, .field select, .field textarea{width:100%; border:none; border-bottom:1px solid var(--warm-beige); background:transparent; padding:10px 2px; font-size:.9rem; color:var(--charcoal); outline:none; transition:border-color .3s var(--ease-fabric);}
+  .field input:focus{border-bottom-color:var(--soft-gold);}
+  .field.error input{border-bottom-color:var(--status-alert);}
+  .field.error .err-msg{font-size:.7rem; color:var(--status-alert); margin-top:6px; display:block;}
+  .field.disabled input{opacity:.4; pointer-events:none;}
+
+  .pill{width:42px; height:42px; border:1px solid var(--warm-beige); display:flex; align-items:center; justify-content:center; font-size:.8rem;}
+  .pill.active{border-color:var(--charcoal); background:var(--charcoal); color:var(--pearl-white);}
+  .pill.soldout{color:var(--warm-beige); position:relative; text-decoration:line-through; opacity:.6;}
+
+  .otp-box{width:40px; height:48px; text-align:center; border:1px solid var(--warm-beige); font-size:1rem; outline:none;}
+  .otp-box:focus{border-color:var(--soft-gold);}
+
+  .qty-stepper{display:flex; align-items:center; border:1px solid var(--warm-beige); width:fit-content;}
+  .qty-stepper button{background:none; border:none; width:32px; height:34px; font-size:1rem;}
+  .qty-stepper button:disabled{opacity:.3; pointer-events:none;}
+  .qty-stepper span{width:30px; text-align:center; font-size:.88rem;}
+
+  .card-doc{width:190px;}
+  .card-doc .img{aspect-ratio:3/4; position:relative; overflow:hidden; background:linear-gradient(160deg, var(--cream), var(--warm-beige));}
+  .card-doc .wl{position:absolute; top:10px; right:10px; width:26px; height:26px; border-radius:50%; background:rgba(250,249,246,.85); display:flex; align-items:center; justify-content:center; font-size:.75rem;}
+  .card-doc .qa{position:absolute; left:8px; right:8px; bottom:8px; background:var(--charcoal); color:var(--pearl-white); text-align:center; font-size:.62rem; letter-spacing:.1em; text-transform:uppercase; padding:9px;}
+  .card-doc .title{font-family:var(--font-display); font-size:.92rem; margin-top:10px;}
+  .card-doc .price{font-size:.78rem; color:var(--muted-bronze); margin-top:3px;}
+
+  .tag{display:inline-block; font-size:.64rem; letter-spacing:.1em; text-transform:uppercase; padding:6px 13px; border:1px solid var(--warm-beige); color:var(--muted-bronze);}
+  .status-pill{display:inline-flex; align-items:center; gap:6px; font-size:.66rem; letter-spacing:.08em; text-transform:uppercase;}
+  .status-pill::before{content:''; width:6px; height:6px; border-radius:50%;}
+  .status-success::before{background:var(--status-success);}
+  .status-neutral::before{background:var(--status-neutral);}
+  .status-alert::before{background:var(--status-alert);}
+
+  .nav-link{font-size:.68rem; letter-spacing:.16em; text-transform:uppercase; position:relative; padding-bottom:6px; cursor:pointer;}
+  .nav-link::after{content:''; position:absolute; left:0; bottom:0; width:0; height:1px; background:var(--soft-gold); transition:width .35s var(--ease-fabric);}
+  .nav-link:hover::after, .nav-link.active::after{width:100%;}
+  .nav-link.active{color:var(--soft-gold);}
+
+  .tabs{display:flex; border-bottom:1px solid var(--cream);}
+  .tab{font-size:.7rem; letter-spacing:.12em; text-transform:uppercase; padding:12px 20px; cursor:pointer; color:var(--warm-gray); border-bottom:2px solid transparent; margin-bottom:-1px;}
+  .tab.active{color:var(--charcoal); border-bottom-color:var(--soft-gold);}
+
+  .accordion-item{border-bottom:1px solid var(--cream); width:320px;}
+  .accordion-head{display:flex; justify-content:space-between; padding:16px 0; cursor:pointer; font-size:.82rem; font-weight:600;}
+  .accordion-body{max-height:0; overflow:hidden; transition:max-height .4s var(--ease-fabric); font-size:.82rem; color:var(--warm-gray);}
+  .accordion-item.open .accordion-body{max-height:100px; padding-bottom:16px;}
+  .accordion-plus{color:var(--soft-gold); transition:transform .3s var(--ease-fabric);}
+  .accordion-item.open .accordion-plus{transform:rotate(45deg);}
+
+  .rating-stars{color:var(--soft-gold); font-size:.85rem; letter-spacing:2px;}
+
+  .progress-track{height:4px; background:var(--cream); width:220px; position:relative;}
+  .progress-fill{height:100%; background:var(--soft-gold);}
+
+  .mini-header{width:100%; max-width:520px; padding:16px 24px; display:flex; justify-content:space-between; align-items:center; background:var(--charcoal); font-size:.62rem; letter-spacing:.14em; text-transform:uppercase; color:var(--pearl-white);}
+  .mini-header.solid{background:rgba(250,249,246,.95); color:var(--charcoal); border:1px solid var(--cream);}
+
+  .icon-grid{display:grid; grid-template-columns:repeat(6,1fr); gap:24px; max-width:640px;}
+  .icon-item{text-align:center;}
+  .icon-item .glyph{width:44px; height:44px; border:1px solid var(--cream); border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:1.1rem; margin:0 auto 8px;}
+  .icon-item span{font-size:.66rem; color:var(--warm-gray); letter-spacing:.03em;}
+
+  .motion-table{width:100%; border-collapse:collapse; font-size:.85rem;}
+  .motion-table th{text-align:left; font-size:.66rem; letter-spacing:.12em; text-transform:uppercase; color:var(--muted-bronze); padding:10px 16px 10px 0; border-bottom:1px solid var(--cream);}
+  .motion-table td{padding:16px 16px 16px 0; border-bottom:1px solid var(--cream); color:var(--warm-gray); vertical-align:top;}
+  .motion-table td:first-child{color:var(--charcoal); font-weight:600; white-space:nowrap;}
+  .motion-demo-btn{font-size:.66rem; letter-spacing:.08em; text-transform:uppercase; color:var(--soft-gold); text-decoration:underline; cursor:pointer; background:none; border:none;}
+
+  .thread-demo{width:64px; height:1px; background:var(--soft-gold); transform-origin:left;}
+  .fade-demo-box{padding:14px 20px; background:var(--ivory); font-size:.8rem;}
+  .magnetic-demo{padding:16px 30px; border:1px solid var(--charcoal); font-size:.7rem; letter-spacing:.12em; text-transform:uppercase; display:inline-block;}
+
+  .coverage-table{width:100%; border-collapse:collapse; font-size:.82rem; margin-top:20px;}
+  .coverage-table th, .coverage-table td{padding:12px 14px; border-bottom:1px solid var(--cream); text-align:center;}
+  .coverage-table th{font-size:.62rem; letter-spacing:.08em; text-transform:uppercase; color:var(--muted-bronze);}
+  .coverage-table td:first-child, .coverage-table th:first-child{text-align:left; font-weight:600;}
+  .yes{color:var(--soft-gold);}
+  .no{color:var(--warm-beige);}
+
+  footer{text-align:center; padding:70px 56px; color:var(--warm-gray); font-size:.8rem;}
+</style>
+</head>
+<body>
+
+  <div class="cover">
+    <span class="eyebrow">Phase 5 — Design System</span>
+    <div class="thread"></div>
+    <h1>Component Library</h1>
+    <p>Every reusable piece from the homepage and site pages, formalized into named components with their full state range — the direct handoff spec for the Phase 6 Next.js build.</p>
+  </div>
+
+  <!-- BUTTONS -->
+  <section class="doc-section">
+    <div class="doc-head"><span class="eyebrow">01</span><h2>Buttons</h2><p>Three variants, each carrying default/hover/disabled states. No filled-gold button exists — gold is reserved for the hover/active moment only, never a resting state.</p></div>
+    <div class="demo-row">
+      <div class="demo-block"><span class="state-label">Primary</span><a class="btn btn-primary">Explore Collection</a></div>
+      <div class="demo-block"><span class="state-label">Secondary</span><a class="btn btn-secondary">View Details</a></div>
+      <div class="demo-block"><span class="state-label">Ghost / Link</span><a class="btn btn-ghost">Read the story</a></div>
+      <div class="demo-block"><span class="state-label">Disabled</span><a class="btn btn-primary btn-disabled">Sold Out</a></div>
+    </div>
+  </section>
+
+  <!-- FORMS -->
+  <section class="doc-section">
+    <div class="doc-head"><span class="eyebrow">02</span><h2>Forms &amp; Inputs</h2><p>Underline-style fields throughout — no boxed inputs. Gold underline on focus is the only focus indicator; error state uses the alert tone, never red.</p></div>
+    <div class="demo-row">
+      <div class="demo-block"><span class="state-label">Default</span><div class="field"><label>Email</label><input type="text" placeholder="you@email.com"></div></div>
+      <div class="demo-block"><span class="state-label">Focused</span><div class="field"><label>Email</label><input type="text" style="border-bottom-color:var(--soft-gold)" value="you@email.com"></div></div>
+      <div class="demo-block"><span class="state-label">Error</span><div class="field error"><label>Email</label><input type="text" value="not-an-email"><span class="err-msg">Enter a valid email</span></div></div>
+      <div class="demo-block"><span class="state-label">Disabled</span><div class="field disabled"><label>Email</label><input type="text" value="locked@email.com"></div></div>
+    </div>
+    <div class="demo-row">
+      <div class="demo-block"><span class="state-label">Size Pill — Default</span><div class="pill">M</div></div>
+      <div class="demo-block"><span class="state-label">Size Pill — Active</span><div class="pill active">M</div></div>
+      <div class="demo-block"><span class="state-label">Size Pill — Sold Out</span><div class="pill soldout">M</div></div>
+      <div class="demo-block"><span class="state-label">OTP Input</span><div style="display:flex;gap:8px;"><input class="otp-box" maxlength="1" value="4"><input class="otp-box" maxlength="1"><input class="otp-box" maxlength="1"><input class="otp-box" maxlength="1"></div></div>
+    </div>
+    <div class="demo-row">
+      <div class="demo-block"><span class="state-label">Quantity Stepper</span><div class="qty-stepper"><button>−</button><span>2</span><button>+</button></div></div>
+      <div class="demo-block"><span class="state-label">Quantity Stepper — Min Reached</span><div class="qty-stepper"><button disabled>−</button><span>1</span><button>+</button></div></div>
+    </div>
+  </section>
+
+  <!-- CARDS -->
+  <section class="doc-section">
+    <div class="doc-head"><span class="eyebrow">03</span><h2>Cards</h2><p>One product card component powers both collection grids and "Complete the Look" strips. Quick-add is hover-only on desktop, always visible on touch devices.</p></div>
+    <div class="demo-row">
+      <div class="demo-block"><span class="state-label">Product Card — Resting</span>
+        <div class="card-doc"><div class="img"><span class="wl">♡</span></div><div class="title">Ivory Drape Gown</div><div class="price">₹18,500</div></div>
+      </div>
+      <div class="demo-block"><span class="state-label">Product Card — Hover</span>
+        <div class="card-doc"><div class="img"><span class="wl">♡</span><span class="qa">Quick Add</span></div><div class="title">Ivory Drape Gown</div><div class="price">₹18,500</div></div>
+      </div>
+      <div class="demo-block"><span class="state-label">Product Card — Wishlisted</span>
+        <div class="card-doc"><div class="img"><span class="wl" style="background:var(--charcoal);color:var(--pearl-white);">♥</span></div><div class="title">Ivory Drape Gown</div><div class="price">₹18,500</div></div>
+      </div>
+    </div>
+    <div class="demo-row">
+      <div class="demo-block"><span class="state-label">Rating Stars</span><span class="rating-stars">★★★★☆</span></div>
+      <div class="demo-block"><span class="state-label">Tags</span><span class="tag">New</span> <span class="tag">Limited</span></div>
+      <div class="demo-block"><span class="state-label">Status — Delivered</span><span class="status-pill status-success">Delivered</span></div>
+      <div class="demo-block"><span class="state-label">Status — In Transit</span><span class="status-pill status-neutral">In Transit</span></div>
+      <div class="demo-block"><span class="state-label">Status — Cancelled</span><span class="status-pill status-alert">Cancelled</span></div>
+    </div>
+  </section>
+
+  <!-- NAVIGATION -->
+  <section class="doc-section">
+    <div class="doc-head"><span class="eyebrow">04</span><h2>Navigation</h2><p>Header has exactly two states — transparent-over-hero (homepage only) and solid (every other page). Below 1100px both collapse to the same hamburger + full-screen overlay pattern.</p></div>
+    <div class="demo-row">
+      <div class="demo-block"><span class="state-label">Header — Transparent (hero)</span><div class="mini-header"><span>WHITE ELEGANCE 24</span><span>☰</span></div></div>
+      <div class="demo-block"><span class="state-label">Header — Solid (inner pages)</span><div class="mini-header solid"><span>WHITE ELEGANCE 24</span><span>☰</span></div></div>
+    </div>
+    <div class="demo-row">
+      <div class="demo-block"><span class="state-label">Nav Link — Default</span><span class="nav-link">Party Wear</span></div>
+      <div class="demo-block"><span class="state-label">Nav Link — Active</span><span class="nav-link active">Party Wear</span></div>
+      <div class="demo-block"><span class="state-label">Breadcrumb</span><span style="font-size:.75rem;color:var(--warm-gray)">Home / Collections / <span style="color:var(--charcoal)">Party Wear</span></span></div>
+    </div>
+    <div class="demo-row">
+      <div class="demo-block"><span class="state-label">Tabs</span><div class="tabs"><div class="tab active">Log In</div><div class="tab">Register</div></div></div>
+      <div class="demo-block"><span class="state-label">Accordion — Closed</span><div class="accordion-item"><div class="accordion-head">Fabric &amp; Care <span class="accordion-plus">+</span></div><div class="accordion-body">100% mulberry silk.</div></div></div>
+      <div class="demo-block"><span class="state-label">Accordion — Open</span><div class="accordion-item open"><div class="accordion-head">Fabric &amp; Care <span class="accordion-plus">+</span></div><div class="accordion-body">100% mulberry silk satin. Dry clean only.</div></div></div>
+    </div>
+    <div class="demo-row">
+      <div class="demo-block"><span class="state-label">Progress Bar (shipping threshold)</span><div class="progress-track"><div class="progress-fill" style="width:65%"></div></div></div>
+    </div>
+  </section>
+
+  <!-- ICONS -->
+  <section class="doc-section">
+    <div class="doc-head"><span class="eyebrow">05</span><h2>Icons</h2><p>Placeholder glyphs shown here stand in for a proper 1.5px-stroke line icon set (Lucide) in the Phase 6 build, on a consistent 20×20 grid, rounded caps, no fill except on active/selected states.</p></div>
+    <div class="icon-grid">
+      <div class="icon-item"><div class="glyph">⌕</div><span>Search</span></div>
+      <div class="icon-item"><div class="glyph">♡</div><span>Wishlist</span></div>
+      <div class="icon-item"><div class="glyph">◈</div><span>Account</span></div>
+      <div class="icon-item"><div class="glyph">⛃</div><span>Cart</span></div>
+      <div class="icon-item"><div class="glyph">✕</div><span>Close</span></div>
+      <div class="icon-item"><div class="glyph">☰</div><span>Menu</span></div>
+      <div class="icon-item"><div class="glyph">+</div><span>Add</span></div>
+      <div class="icon-item"><div class="glyph">−</div><span>Remove</span></div>
+      <div class="icon-item"><div class="glyph">▶</div><span>Play</span></div>
+      <div class="icon-item"><div class="glyph">★</div><span>Rating</span></div>
+      <div class="icon-item"><div class="glyph">→</div><span>Arrow</span></div>
+      <div class="icon-item"><div class="glyph">⌄</div><span>Chevron</span></div>
+    </div>
+  </section>
+
+  <!-- ANIMATION PRIMITIVES -->
+  <section class="doc-section">
+    <div class="doc-head"><span class="eyebrow">06</span><h2>Animation Primitives</h2><p>Seven named motion patterns cover the entire site. Nothing outside this list should be introduced in Phase 6 without adding it here first.</p></div>
+    <table class="motion-table">
+      <tr><th>Primitive</th><th>Timing</th><th>Used for</th><th>Try it</th></tr>
+      <tr><td>fade-up-stagger</td><td style="color:var(--warm-gray)">900ms, power3.out, 0.12s stagger</td><td>Section content entering viewport (Why White, Philosophy, Newsletter)</td><td><button class="motion-demo-btn" id="demoFade">Replay</button></td></tr>
+      <tr><td>thread-draw</td><td style="color:var(--warm-gray)">1.4s, ease-fabric</td><td>The signature hairline under headings, dividers, page cover</td><td><button class="motion-demo-btn" id="demoThread">Replay</button></td></tr>
+      <tr><td>mask-reveal</td><td style="color:var(--warm-gray)">900ms, ease-fabric</td><td>Images scaling in from 1.06 → 1.0 as they enter viewport</td><td>—</td></tr>
+      <tr><td>magnetic-button</td><td style="color:var(--warm-gray)">400ms follow / elastic.out release</td><td>Primary hero &amp; product CTAs only — not used on utility buttons</td><td><span class="magnetic-demo" id="demoMagnetic">Hover me</span></td></tr>
+      <tr><td>dupatta-unfold</td><td style="color:var(--warm-gray)">Scroll-scrubbed, ~1.8s equivalent</td><td>Homepage hero → Section 2 only. One-time signature moment, not reused elsewhere</td><td>—</td></tr>
+      <tr><td>page-fade</td><td style="color:var(--warm-gray)">500ms, ease-fabric</td><td>Route transitions between pages (Framer Motion in production)</td><td>—</td></tr>
+      <tr><td>fabric-thread</td><td style="color:var(--warm-gray)">Idle sway, 14s sine.inOut, repeat/yoyo — not scroll-tied</td><td>Meaning of White section only — one soft horizontal hairline drifting gently behind the compact 7-word grid. SVG path redrawn on a slow idle loop, no physics/WebGL. (Originally a scroll-scrubbed ribbon threading through 7 full-screen blocks; redesigned when that section was condensed into one compact frame.)</td><td>—</td></tr>
+    </table>
+    <div style="margin-top:36px; display:flex; gap:48px; align-items:center;">
+      <div id="fadeDemoTarget" class="fade-demo-box">This box fades up on replay</div>
+      <div id="threadDemoTarget" class="thread-demo"></div>
+    </div>
+  </section>
+
+  <!-- COVERAGE CHECKLIST -->
+  <section class="doc-section">
+    <div class="doc-head"><span class="eyebrow">07</span><h2>State Coverage Checklist</h2><p>Sign-off reference — confirms no component enters Phase 6 missing a required state.</p></div>
+    <table class="coverage-table">
+      <tr><th>Component</th><th>Default</th><th>Hover</th><th>Active</th><th>Disabled</th><th>Error</th><th>Empty</th></tr>
+      <tr><td>Button</td><td class="yes">✓</td><td class="yes">✓</td><td class="yes">✓</td><td class="yes">✓</td><td class="no">—</td><td class="no">—</td></tr>
+      <tr><td>Text Input</td><td class="yes">✓</td><td class="no">—</td><td class="yes">✓ (focus)</td><td class="yes">✓</td><td class="yes">✓</td><td class="no">—</td></tr>
+      <tr><td>Size Pill</td><td class="yes">✓</td><td class="yes">✓</td><td class="yes">✓</td><td class="yes">✓ (sold out)</td><td class="no">—</td><td class="no">—</td></tr>
+      <tr><td>Product Card</td><td class="yes">✓</td><td class="yes">✓</td><td class="no">—</td><td class="no">—</td><td class="no">—</td><td class="no">—</td></tr>
+      <tr><td>Nav Link</td><td class="yes">✓</td><td class="yes">✓</td><td class="yes">✓</td><td class="no">—</td><td class="no">—</td><td class="no">—</td></tr>
+      <tr><td>Cart</td><td class="yes">✓</td><td class="no">—</td><td class="no">—</td><td class="no">—</td><td class="no">—</td><td class="yes">✓ (needs empty-cart illustration — flag for Phase 6)</td></tr>
+      <tr><td>Wishlist</td><td class="yes">✓</td><td class="no">—</td><td class="no">—</td><td class="no">—</td><td class="no">—</td><td class="yes">✓ (needs empty-wishlist state — flag for Phase 6)</td></tr>
+      <tr><td>Search Results</td><td class="yes">✓</td><td class="no">—</td><td class="no">—</td><td class="no">—</td><td class="no">—</td><td class="yes">✓ (needs "no results" state — flag for Phase 6)</td></tr>
+    </table>
+  </section>
+
+  <footer>WHITE ELEGANCE 24 — Component Library · Phase 5 of 6 · Approve to proceed to Phase 6 (Production Build)</footer>
+
+<script>
+document.querySelectorAll('.accordion-head').forEach(h=> h.addEventListener('click', ()=> h.parentElement.classList.toggle('open')));
+
+function playFade(){
+  gsap.fromTo('#fadeDemoTarget', {opacity:0, y:24}, {opacity:1, y:0, duration:.9, ease:'power3.out'});
+}
+function playThread(){
+  gsap.fromTo('#threadDemoTarget', {scaleX:0}, {scaleX:1, duration:1.4, ease:'power2.out', transformOrigin:'left'});
+}
+playFade(); playThread();
+document.getElementById('demoFade').addEventListener('click', playFade);
+document.getElementById('demoThread').addEventListener('click', playThread);
+
+const magnetic = document.getElementById('demoMagnetic');
+magnetic.addEventListener('mousemove', e=>{
+  const r = magnetic.getBoundingClientRect();
+  gsap.to(magnetic, {x:(e.clientX-r.left-r.width/2)*0.3, y:(e.clientY-r.top-r.height/2)*0.4, duration:.4, ease:'power3.out'});
+});
+magnetic.addEventListener('mouseleave', ()=> gsap.to(magnetic, {x:0,y:0,duration:.5,ease:'elastic.out(1,0.4)'}));
+</script>
+</body>
+</html>

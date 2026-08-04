@@ -1,0 +1,44 @@
+.track {
+  display: flex;
+  width: 100%;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+
+.track::-webkit-scrollbar {
+  display: none;
+}
+
+.slide {
+  position: relative;
+  flex: 0 0 100%;
+  aspect-ratio: 3 / 4;
+  scroll-snap-align: start;
+}
+
+.dots {
+  position: absolute;
+  bottom: 14px;
+  left: 0;
+  right: 0;
+  z-index: 1;
+  display: flex;
+  justify-content: center;
+  gap: 6px;
+}
+
+.dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--pearl-white);
+  opacity: 0.5;
+  transition: opacity 0.3s var(--ease-fabric), transform 0.3s var(--ease-fabric);
+}
+
+.dotActive {
+  opacity: 1;
+  transform: scale(1.3);
+}

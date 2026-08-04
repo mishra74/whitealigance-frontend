@@ -1,0 +1,283 @@
+.header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  z-index: 500;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 28px 56px;
+  background: transparent;
+  transition: background 0.5s var(--ease-fabric), padding 0.5s var(--ease-fabric),
+    box-shadow 0.5s var(--ease-fabric);
+}
+
+.sticky {
+  position: sticky;
+}
+
+.solid {
+  background: rgba(250, 249, 246, 0.9);
+  backdrop-filter: blur(14px);
+  padding: 18px 56px;
+  box-shadow: 0 1px 0 var(--cream);
+}
+
+.logo {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.logoMark {
+  height: 44px;
+  width: auto;
+  display: block;
+}
+
+@media (max-width: 1100px) {
+  .logoMark {
+    height: 36px;
+  }
+}
+
+.nav {
+  display: flex;
+  gap: 38px;
+}
+
+.navLink {
+  position: relative;
+  padding-bottom: 6px;
+  font-size: 0.68rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--pearl-white);
+  white-space: nowrap;
+  cursor: pointer;
+  transition: color 0.5s var(--ease-fabric);
+}
+
+.solid .navLink {
+  color: var(--charcoal);
+}
+
+.navLink::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: 0;
+  height: 1px;
+  background: var(--soft-gold);
+  transition: width 0.35s var(--ease-fabric);
+}
+
+.navLink:hover::after,
+.navLinkActive::after {
+  width: 100%;
+}
+
+.navLinkActive {
+  color: var(--soft-gold) !important;
+}
+
+.icons {
+  display: flex;
+  align-items: center;
+  gap: 26px;
+}
+
+.icon {
+  position: relative;
+  display: flex;
+  color: var(--pearl-white);
+  cursor: pointer;
+  transition: color 0.5s var(--ease-fabric);
+}
+
+.solid .icon {
+  color: var(--charcoal);
+}
+
+/* icon links are replaced by MobileTabBar below 1100px, so they'd be
+   redundant here — the hamburger (a sibling in .icons, not .iconLink)
+   stays, since Collections/Party Wear/etc. still need it */
+@media (max-width: 1100px) {
+  .iconLink {
+    display: none;
+  }
+}
+
+.cartBadge {
+  position: absolute;
+  top: -8px;
+  right: -10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 15px;
+  height: 15px;
+  padding: 0 3px;
+  border-radius: 50%;
+  background: var(--soft-gold);
+  color: var(--pearl-white);
+  font-size: 0.6rem;
+  font-family: var(--font-body);
+  line-height: 1;
+}
+
+.hamburger {
+  display: none;
+  flex-direction: column;
+  gap: 5px;
+  width: 22px;
+  padding: 0;
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+
+.hamburger span {
+  display: block;
+  width: 100%;
+  height: 1px;
+  background: var(--pearl-white);
+  transition: background 0.5s var(--ease-fabric);
+}
+
+.solid .hamburger span {
+  background: var(--charcoal);
+}
+
+@media (max-width: 1100px) {
+  .header {
+    padding: 22px 32px;
+  }
+  .solid {
+    padding: 16px 32px;
+  }
+  .nav {
+    display: none;
+  }
+  .hamburger {
+    display: flex;
+  }
+  .icons {
+    gap: 16px;
+  }
+}
+
+/* ---- mega menu ---- */
+.mega {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  display: flex;
+  gap: 48px;
+  z-index: 400;
+  padding: 140px 56px 64px;
+  background: var(--pearl-white);
+  transform: translateY(-100%);
+  opacity: 0;
+  pointer-events: none;
+  transition: transform 0.5s var(--ease-fabric), opacity 0.5s var(--ease-fabric);
+}
+
+.megaOpen {
+  transform: translateY(0);
+  opacity: 1;
+  pointer-events: auto;
+}
+
+/* the mega menu's trigger only exists inside .nav (hidden below 1100px),
+   and its content's min-width was forcing horizontal scroll on mobile even
+   while visually hidden via transform (transform doesn't affect layout size) */
+@media (max-width: 1100px) {
+  .mega {
+    display: none;
+  }
+}
+
+.megaCard {
+  position: relative;
+  flex: 1;
+  height: 320px;
+  overflow: hidden;
+}
+
+.megaCard :global(img) {
+  transition: transform 0.7s var(--ease-fabric);
+}
+
+.megaCard:hover :global(img) {
+  transform: scale(1.06);
+}
+
+.megaCard::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  background: linear-gradient(
+    0deg,
+    rgba(0, 0, 0, 0.68) 0%,
+    rgba(0, 0, 0, 0.22) 45%,
+    rgba(0, 0, 0, 0) 72%
+  );
+}
+
+.megaCardLabel {
+  position: absolute;
+  bottom: 22px;
+  left: 22px;
+  z-index: 2;
+  font-family: var(--font-display);
+  font-size: 1.6rem;
+  color: var(--pearl-white);
+}
+
+/* ---- mobile nav ---- */
+.mobileNav {
+  position: fixed;
+  inset: 0;
+  z-index: 600;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 26px;
+  background: rgba(250, 249, 246, 0.92);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  transform: translateX(100%);
+  opacity: 0;
+  pointer-events: none;
+  transition: transform 0.5s var(--ease-fabric), opacity 0.5s var(--ease-fabric);
+}
+
+.mobileNavOpen {
+  transform: translateX(0);
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.mobileNav a {
+  font-family: var(--font-display);
+  font-size: 1.7rem;
+  color: var(--charcoal);
+}
+
+.mobileClose {
+  position: absolute;
+  top: 30px;
+  right: 34px;
+  padding: 0;
+  font-size: 1.3rem;
+  color: var(--charcoal);
+  background: none;
+  border: none;
+  cursor: pointer;
+}

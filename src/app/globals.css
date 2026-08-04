@@ -1,0 +1,65 @@
+@import "tailwindcss";
+@import "../../tokens.css";
+
+/*
+  Font families are loaded via next/font/google in layout.tsx (not the
+  <link> tags tokens.css/the HTML prototypes use) so Next can self-host
+  and subset them. Point the design-token names at the loaded variables.
+*/
+:root {
+  --font-display: var(--font-fraunces), serif;
+  --font-body: var(--font-instrument-sans), sans-serif;
+}
+
+/*
+  Spacing scale: tokens.css's --space-1..10 (4/8/16/24/32/48/64/96/128/160px)
+  is already exactly Tailwind's default 4px-based numeric spacing scale
+  (p-1, p-2, p-4, p-6, p-8, p-12, p-16, p-24, p-32, p-40). No override
+  needed — use the native numeric utilities.
+*/
+
+:root {
+  /* MobileTabBar's rendered height (excluding its own safe-area padding) —
+     shared so other fixed mobile bars (e.g. the PDP sticky Add to Cart bar)
+     can stack directly above it without overlapping. */
+  --mobile-tab-bar-height: 58px;
+}
+
+@theme inline {
+  --color-pearl-white: var(--pearl-white);
+  --color-ivory: var(--ivory);
+  --color-cream: var(--cream);
+  --color-warm-beige: var(--warm-beige);
+  --color-champagne: var(--champagne);
+  --color-soft-gold: var(--soft-gold);
+  --color-muted-bronze: var(--muted-bronze);
+  --color-warm-gray: var(--warm-gray);
+  --color-charcoal: var(--charcoal);
+
+  --font-display: var(--font-display);
+  --font-body: var(--font-body);
+
+  --ease-fabric: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+body {
+  background: var(--pearl-white);
+  color: var(--charcoal);
+  font-family: var(--font-body);
+}
+
+/* Toggled on <body> only while HomeCursor (homepage-only) is mounted. */
+.cursor-none,
+.cursor-none * {
+  cursor: none !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}

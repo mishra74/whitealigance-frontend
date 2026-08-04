@@ -1,0 +1,144 @@
+.hero {
+  position: relative;
+  height: 100vh;
+  min-height: 680px;
+  display: flex;
+  align-items: center;
+  overflow: hidden;
+}
+
+/* bleeds past the section edges so parallax translate/zoom never exposes a gap */
+.mediaLayer {
+  position: absolute;
+  inset: -6% -4%;
+  z-index: 0;
+  overflow: hidden;
+}
+
+.mediaPan {
+  position: absolute;
+  inset: 0;
+}
+
+.video {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.scrim {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  background: linear-gradient(
+    180deg,
+    rgba(20, 17, 14, 0.4) 0%,
+    rgba(20, 17, 14, 0.12) 38%,
+    rgba(20, 17, 14, 0.5) 100%
+  );
+}
+
+.heroInner {
+  position: relative;
+  z-index: 5;
+  max-width: 620px;
+  padding: 0 56px;
+  color: var(--pearl-white);
+}
+
+@media (max-width: 1100px) {
+  .heroInner {
+    padding: 0 32px;
+  }
+}
+
+@media (max-width: 640px) {
+  .heroInner {
+    padding: 0 24px;
+  }
+}
+
+.eyebrow {
+  display: block;
+  margin-bottom: 28px;
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: clamp(1.75rem, 3.4vw, 2.75rem);
+  line-height: 1.1;
+  letter-spacing: -0.005em;
+  color: var(--pearl-white);
+}
+
+.headline {
+  font-family: var(--font-display);
+  font-weight: 400;
+  font-size: clamp(1.7rem, 3.6vw, 3.2rem);
+  line-height: 1.04;
+  letter-spacing: -0.01em;
+}
+
+.word {
+  display: inline-block;
+  white-space: nowrap;
+}
+
+.char {
+  display: inline-block;
+  opacity: 0;
+  transform: translateY(40px);
+}
+
+.cta {
+  display: inline-block;
+  margin-top: 40px;
+  padding: 17px 38px;
+  border: 1px solid var(--pearl-white);
+  font-size: 0.72rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--pearl-white);
+  position: relative;
+  transition: background 0.4s var(--ease-fabric), color 0.4s var(--ease-fabric);
+}
+
+.cta:hover {
+  background: var(--pearl-white);
+  color: var(--charcoal);
+}
+
+.scrollCue {
+  position: absolute;
+  bottom: 36px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 1px;
+  height: 56px;
+  background: rgba(250, 249, 246, 0.5);
+  z-index: 5;
+  overflow: hidden;
+}
+
+.scrollCue::after {
+  content: "";
+  position: absolute;
+  top: -100%;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: var(--pearl-white);
+  animation: cue 2.2s ease-in-out infinite;
+}
+
+@keyframes cue {
+  0% {
+    top: -100%;
+  }
+  60% {
+    top: 100%;
+  }
+  100% {
+    top: 100%;
+  }
+}

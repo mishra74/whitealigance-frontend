@@ -1,0 +1,60 @@
+.stickySpacer {
+  display: none;
+}
+
+.stickyBar {
+  display: none;
+}
+
+@media (max-width: 1100px) {
+  .stickySpacer {
+    display: block;
+    height: 80px;
+  }
+
+  .stickyBar {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: var(--mobile-tab-bar-height);
+    z-index: 490;
+    height: 80px;
+    padding: 0 20px;
+    background: rgba(250, 249, 246, 0.97);
+    backdrop-filter: blur(14px);
+    border-top: 1px solid var(--cream);
+    box-sizing: border-box;
+  }
+}
+
+.stickyInfo {
+  display: flex;
+  min-width: 0;
+  flex: 1;
+  flex-direction: column;
+  text-align: left;
+}
+
+.stickyTitle {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-family: var(--font-display);
+  font-size: 0.9rem;
+}
+
+.stickyPrice {
+  margin-top: 2px;
+  font-size: 0.82rem;
+  color: var(--muted-bronze);
+}
+
+.stickyButton {
+  flex-shrink: 0;
+  width: auto;
+  padding-left: 28px;
+  padding-right: 28px;
+}

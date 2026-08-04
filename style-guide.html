@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>WHITE ELEGANCE 24 — Design Tokens</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;0,9..144,500;0,9..144,600;1,9..144,400;1,9..144,500&family=Instrument+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    /* ===== COLOR TOKENS ===== */
+    --pearl-white:  #FAF9F6;
+    --ivory:        #F5F0E6;
+    --cream:        #EFE6D8;
+    --warm-beige:   #D9C7AE;
+    --champagne:    #C9A876;
+    --soft-gold:    #B8935A;
+    --muted-bronze: #8B6F47;
+    --warm-gray:    #6B6560;
+    --charcoal:     #2B2825;
+
+    /* ===== TYPE TOKENS ===== */
+    --font-display: 'Fraunces', serif;
+    --font-body: 'Instrument Sans', sans-serif;
+
+    /* ===== SPACING TOKENS (base 4px) ===== */
+    --space-1: 4px;
+    --space-2: 8px;
+    --space-3: 16px;
+    --space-4: 24px;
+    --space-5: 32px;
+    --space-6: 48px;
+    --space-7: 64px;
+    --space-8: 96px;
+    --space-9: 128px;
+    --space-10: 160px;
+
+    /* ===== MOTION TOKENS ===== */
+    --ease-fabric: cubic-bezier(0.22, 1, 0.36, 1);
+    --duration-quick: 200ms;
+    --duration-base: 400ms;
+    --duration-reveal: 900ms;
+  }
+
+  * { margin:0; padding:0; box-sizing:border-box; }
+
+  body{
+    background: var(--pearl-white);
+    color: var(--charcoal);
+    font-family: var(--font-body);
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  section{
+    max-width: 1180px;
+    margin: 0 auto;
+    padding: var(--space-9) var(--space-5);
+    border-bottom: 1px solid var(--cream);
+  }
+  section:last-child{ border-bottom:none; }
+
+  .eyebrow{
+    font-family: var(--font-body);
+    font-size: 0.7rem;
+    font-weight: 600;
+    letter-spacing: 0.24em;
+    text-transform: uppercase;
+    color: var(--muted-bronze);
+    display: block;
+    margin-bottom: var(--space-3);
+  }
+
+  .section-title{
+    font-family: var(--font-display);
+    font-weight: 400;
+    font-size: clamp(1.8rem, 3vw, 2.6rem);
+    letter-spacing: -0.01em;
+    margin-bottom: var(--space-6);
+  }
+
+  /* ===== THREAD LINE — signature motif ===== */
+  .thread{
+    width: 64px;
+    height: 1px;
+    background: var(--soft-gold);
+    margin: 0 auto var(--space-4);
+    transform-origin: left;
+    animation: draw 1.4s var(--ease-fabric) forwards;
+  }
+  @keyframes draw{ from{ transform: scaleX(0); } to{ transform: scaleX(1); } }
+
+  /* ===== COVER ===== */
+  .cover{
+    text-align:center;
+    padding: var(--space-10) var(--space-5) var(--space-9);
+    border-bottom: 1px solid var(--cream);
+  }
+  .cover .eyebrow{ text-align:center; }
+  .cover h1{
+    font-family: var(--font-display);
+    font-weight: 400;
+    font-size: clamp(2.6rem, 6vw, 4.4rem);
+    letter-spacing: -0.01em;
+  }
+  .cover h1 em{ font-style: italic; font-weight: 500; color: var(--soft-gold); }
+  .cover p{
+    max-width: 560px;
+    margin: var(--space-4) auto 0;
+    color: var(--warm-gray);
+    font-size: 1rem;
+  }
+
+  /* ===== COLOR GRID ===== */
+  .color-grid{
+    display:grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: var(--space-4);
+  }
+  .swatch{ border: 1px solid var(--cream); }
+  .swatch-fill{ height: 96px; }
+  .swatch-info{ padding: var(--space-3); background: var(--pearl-white); }
+  .swatch-name{ font-family: var(--font-display); font-size: 1.05rem; margin-bottom: 2px; }
+  .swatch-hex{ font-size: 0.78rem; color: var(--warm-gray); letter-spacing: 0.03em; }
+  .swatch-use{ font-size: 0.78rem; color: var(--muted-bronze); margin-top: var(--space-2); }
+  .on-dark{ color: var(--pearl-white); }
+
+  /* ===== TYPE SPECIMENS ===== */
+  .specimen{ padding: var(--space-5) 0; border-top: 1px solid var(--cream); display:flex; align-items:baseline; justify-content:space-between; gap: var(--space-4); flex-wrap:wrap; }
+  .specimen:last-child{ border-bottom: 1px solid var(--cream); }
+  .specimen-meta{ font-size: 0.75rem; color: var(--warm-gray); min-width: 200px; letter-spacing: 0.03em; }
+  .specimen-meta b{ display:block; color: var(--charcoal); font-family: var(--font-body); font-weight:600; font-size: 0.8rem; margin-bottom: 4px; }
+  .t-hero{ font-family: var(--font-display); font-weight: 400; font-size: clamp(2.6rem, 6vw, 5.2rem); line-height: 0.95; letter-spacing: -0.02em; }
+  .t-h1{ font-family: var(--font-display); font-weight: 400; font-size: clamp(2rem, 4vw, 3rem); }
+  .t-h2{ font-family: var(--font-display); font-weight: 500; font-size: clamp(1.5rem, 3vw, 2.1rem); }
+  .t-body-lg{ font-family: var(--font-body); font-weight: 400; font-size: 1.2rem; color: var(--warm-gray); max-width: 480px; }
+  .t-body{ font-family: var(--font-body); font-weight: 400; font-size: 1rem; color: var(--warm-gray); max-width: 480px; }
+  .t-caption{ font-family: var(--font-body); font-weight: 600; font-size: 0.72rem; letter-spacing: 0.22em; text-transform: uppercase; }
+
+  /* ===== SPACING SCALE ===== */
+  .space-row{ display:flex; align-items:center; gap: var(--space-4); margin-bottom: var(--space-3); }
+  .space-label{ width: 130px; font-size: 0.78rem; color: var(--warm-gray); font-family: var(--font-body); }
+  .space-bar{ height: 10px; background: var(--soft-gold); }
+
+  /* ===== COMPONENTS ===== */
+  .comp-grid{ display:grid; grid-template-columns: 1fr 1fr; gap: var(--space-7); }
+  .comp-block{ }
+  .comp-label{ font-size: 0.72rem; letter-spacing: 0.18em; text-transform: uppercase; color: var(--muted-bronze); margin-bottom: var(--space-4); display:block; }
+  .btn-row{ display:flex; gap: var(--space-3); flex-wrap:wrap; margin-bottom: var(--space-5); }
+
+  .btn{
+    font-family: var(--font-body);
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    padding: 16px 32px;
+    cursor: pointer;
+    border: 1px solid var(--charcoal);
+    background: transparent;
+    transition: all var(--duration-base) var(--ease-fabric);
+  }
+  .btn-primary{ background: var(--charcoal); color: var(--pearl-white); }
+  .btn-primary:hover{ background: var(--soft-gold); border-color: var(--soft-gold); }
+  .btn-secondary{ color: var(--charcoal); }
+  .btn-secondary:hover{ background: var(--charcoal); color: var(--pearl-white); }
+  .btn-ghost{
+    border: none; padding: 4px 0; letter-spacing: 0.1em;
+    position: relative; color: var(--charcoal);
+  }
+  .btn-ghost::after{
+    content:''; position:absolute; left:0; bottom:0; width:100%; height:1px;
+    background: var(--soft-gold); transform: scaleX(0.3); transform-origin:left;
+    transition: transform var(--duration-base) var(--ease-fabric);
+  }
+  .btn-ghost:hover::after{ transform: scaleX(1); }
+
+  .field{ margin-bottom: var(--space-5); max-width: 320px; }
+  .field label{ font-size: 0.72rem; letter-spacing: 0.16em; text-transform: uppercase; color: var(--warm-gray); display:block; margin-bottom: var(--space-2); }
+  .field input{
+    width:100%; border:none; border-bottom: 1px solid var(--warm-gray); background:transparent;
+    padding: 10px 2px; font-family: var(--font-body); font-size: 0.95rem; color: var(--charcoal);
+    outline:none; transition: border-color var(--duration-base) var(--ease-fabric);
+  }
+  .field input:focus{ border-bottom-color: var(--soft-gold); }
+
+  .card{ background: var(--ivory); overflow:hidden; max-width: 260px; }
+  .card-img{ height: 180px; background: linear-gradient(150deg, var(--warm-beige), var(--cream)); transition: transform 600ms var(--ease-fabric); }
+  .card:hover .card-img{ transform: scale(1.04); }
+  .card-body{ padding: var(--space-3); }
+  .card-title{ font-family: var(--font-display); font-size: 1rem; margin-bottom: 4px; }
+  .card-price{ font-size: 0.78rem; color: var(--muted-bronze); letter-spacing: 0.05em; }
+
+  .nav-demo{ display:flex; gap: var(--space-5); padding: var(--space-4) 0; }
+  .nav-item{ font-size: 0.72rem; letter-spacing: 0.16em; text-transform: uppercase; color: var(--charcoal); position:relative; padding-bottom: 6px; cursor:pointer; }
+  .nav-item::after{ content:''; position:absolute; left:0; bottom:0; width:0; height:1px; background: var(--soft-gold); transition: width var(--duration-base) var(--ease-fabric); }
+  .nav-item:hover::after, .nav-item.active::after{ width:100%; }
+  .nav-item.active{ color: var(--soft-gold); }
+
+  .tag{ display:inline-block; font-size: 0.68rem; letter-spacing: 0.14em; text-transform: uppercase; padding: 6px 14px; border: 1px solid var(--warm-beige); color: var(--muted-bronze); margin-right: var(--space-2); }
+
+  footer{ text-align:center; padding: var(--space-8) var(--space-5); }
+  footer p{ font-size: 0.78rem; color: var(--warm-gray); letter-spacing: 0.02em; }
+</style>
+</head>
+<body>
+
+  <div class="cover">
+    <span class="eyebrow">Phase 2 — Moodboard &amp; Design Tokens</span>
+    <div class="thread"></div>
+    <h1>WHITE ELEGANCE 24<br><em>Design System</em></h1>
+    <p>Confidence, purity, timeless fashion, grace — translated into color, type, space and motion. Every token below feeds directly into the Phase 6 Next.js build.</p>
+  </div>
+
+  <section>
+    <span class="eyebrow">01 — Color</span>
+    <h2 class="section-title">The Palette</h2>
+    <div class="color-grid">
+      <div class="swatch">
+        <div class="swatch-fill" style="background:var(--pearl-white)"></div>
+        <div class="swatch-info"><div class="swatch-name">Pearl White</div><div class="swatch-hex">#FAF9F6</div><div class="swatch-use">Primary background</div></div>
+      </div>
+      <div class="swatch">
+        <div class="swatch-fill" style="background:var(--ivory)"></div>
+        <div class="swatch-info"><div class="swatch-name">Ivory</div><div class="swatch-hex">#F5F0E6</div><div class="swatch-use">Cards, secondary surfaces</div></div>
+      </div>
+      <div class="swatch">
+        <div class="swatch-fill" style="background:var(--cream)"></div>
+        <div class="swatch-info"><div class="swatch-name">Cream</div><div class="swatch-hex">#EFE6D8</div><div class="swatch-use">Hairlines, section dividers</div></div>
+      </div>
+      <div class="swatch">
+        <div class="swatch-fill" style="background:var(--warm-beige)"></div>
+        <div class="swatch-info"><div class="swatch-name">Warm Beige</div><div class="swatch-hex">#D9C7AE</div><div class="swatch-use">Borders, placeholder fills</div></div>
+      </div>
+      <div class="swatch">
+        <div class="swatch-fill" style="background:var(--champagne)"></div>
+        <div class="swatch-info"><div class="swatch-name">Champagne</div><div class="swatch-hex">#C9A876</div><div class="swatch-use">Secondary accent, hover states</div></div>
+      </div>
+      <div class="swatch">
+        <div class="swatch-fill" style="background:var(--soft-gold)"></div>
+        <div class="swatch-info"><div class="swatch-name">Soft Gold</div><div class="swatch-hex">#B8935A</div><div class="swatch-use">Primary accent — CTAs, links, thread motif</div></div>
+      </div>
+      <div class="swatch">
+        <div class="swatch-fill on-dark" style="background:var(--muted-bronze)"></div>
+        <div class="swatch-info"><div class="swatch-name">Muted Bronze</div><div class="swatch-hex">#8B6F47</div><div class="swatch-use">Icons, eyebrows, small labels</div></div>
+      </div>
+      <div class="swatch">
+        <div class="swatch-fill on-dark" style="background:var(--warm-gray)"></div>
+        <div class="swatch-info"><div class="swatch-name">Warm Gray</div><div class="swatch-hex">#6B6560</div><div class="swatch-use">Body copy, secondary text</div></div>
+      </div>
+      <div class="swatch">
+        <div class="swatch-fill on-dark" style="background:var(--charcoal)"></div>
+        <div class="swatch-info"><div class="swatch-name">Charcoal</div><div class="swatch-hex">#2B2825</div><div class="swatch-use">Headings, primary text — never pure black</div></div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <span class="eyebrow">02 — Typography</span>
+    <h2 class="section-title">Fraunces &amp; Instrument Sans</h2>
+
+    <div class="specimen">
+      <div class="specimen-meta"><b>Hero</b>Fraunces 400 · clamp(2.6–5.2rem)<br>line-height 0.95 · tracking -0.02em</div>
+      <div class="t-hero">Confidence<br>in white.</div>
+    </div>
+    <div class="specimen">
+      <div class="specimen-meta"><b>H1</b>Fraunces 400 · clamp(2–3rem)</div>
+      <div class="t-h1">The Meaning of White</div>
+    </div>
+    <div class="specimen">
+      <div class="specimen-meta"><b>H2</b>Fraunces 500 · clamp(1.5–2.1rem)</div>
+      <div class="t-h2">Discover the Collections</div>
+    </div>
+    <div class="specimen">
+      <div class="specimen-meta"><b>Body Large</b>Instrument Sans 400 · 1.2rem</div>
+      <div class="t-body-lg">White is not the absence of color. It is the presence of everything held quietly.</div>
+    </div>
+    <div class="specimen">
+      <div class="specimen-meta"><b>Body</b>Instrument Sans 400 · 1rem</div>
+      <div class="t-body">Every piece is cut from luxury fabric, tailored for the modern woman who wears her confidence lightly.</div>
+    </div>
+    <div class="specimen">
+      <div class="specimen-meta"><b>Caption / Eyebrow</b>Instrument Sans 600 · tracked 0.22em</div>
+      <div class="t-caption">Party Wear — New Arrivals</div>
+    </div>
+  </section>
+
+  <section>
+    <span class="eyebrow">03 — Spacing</span>
+    <h2 class="section-title">Scale (base 4px)</h2>
+    <div class="space-row"><div class="space-label">space-1 · 4px</div><div class="space-bar" style="width:4px"></div></div>
+    <div class="space-row"><div class="space-label">space-2 · 8px</div><div class="space-bar" style="width:8px"></div></div>
+    <div class="space-row"><div class="space-label">space-3 · 16px</div><div class="space-bar" style="width:16px"></div></div>
+    <div class="space-row"><div class="space-label">space-4 · 24px</div><div class="space-bar" style="width:24px"></div></div>
+    <div class="space-row"><div class="space-label">space-5 · 32px</div><div class="space-bar" style="width:32px"></div></div>
+    <div class="space-row"><div class="space-label">space-6 · 48px</div><div class="space-bar" style="width:48px"></div></div>
+    <div class="space-row"><div class="space-label">space-7 · 64px</div><div class="space-bar" style="width:64px"></div></div>
+    <div class="space-row"><div class="space-label">space-8 · 96px</div><div class="space-bar" style="width:96px"></div></div>
+    <div class="space-row"><div class="space-label">space-9 · 128px</div><div class="space-bar" style="width:128px"></div></div>
+    <div class="space-row"><div class="space-label">space-10 · 160px (section pad)</div><div class="space-bar" style="width:160px"></div></div>
+  </section>
+
+  <section>
+    <span class="eyebrow">04 — Components</span>
+    <h2 class="section-title">Core Tokens</h2>
+    <div class="comp-grid">
+      <div class="comp-block">
+        <span class="comp-label">Buttons</span>
+        <div class="btn-row">
+          <button class="btn btn-primary">Explore Collection</button>
+          <button class="btn btn-secondary">View Details</button>
+        </div>
+        <div class="btn-row"><a class="btn-ghost">Read the story</a></div>
+
+        <span class="comp-label" style="margin-top:32px;display:block;">Input Field</span>
+        <div class="field">
+          <label>Email</label>
+          <input type="text" placeholder="you@email.com">
+        </div>
+
+        <span class="comp-label">Tags</span>
+        <span class="tag">New</span><span class="tag">Limited</span><span class="tag">Handcrafted</span>
+      </div>
+
+      <div class="comp-block">
+        <span class="comp-label">Navigation</span>
+        <div class="nav-demo">
+          <span class="nav-item active">Home</span>
+          <span class="nav-item">Party Wear</span>
+          <span class="nav-item">Casual Wear</span>
+          <span class="nav-item">About</span>
+        </div>
+
+        <span class="comp-label" style="margin-top:24px;display:block;">Product Card</span>
+        <div class="card">
+          <div class="card-img"></div>
+          <div class="card-body">
+            <div class="card-title">Ivory Drape Gown</div>
+            <div class="card-price">₹18,500</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <span class="eyebrow">05 — Motion</span>
+    <h2 class="section-title">Signature: The Thread Line</h2>
+    <p class="t-body" style="max-width:640px;margin-bottom:32px;">
+      A single hairline in Soft Gold draws itself across headings and dividers — a quiet stitch motif that echoes fabric and tailoring. It recurs everywhere: under section titles, beneath nav links on hover, and at the center of the hero→Section 2 dupatta-unfold transition. One gesture, used with restraint, becomes the signature the whole site is remembered by.
+    </p>
+    <div style="display:flex;gap:48px;flex-wrap:wrap;font-size:0.78rem;color:var(--warm-gray)">
+      <div><b style="color:var(--charcoal)">ease-fabric</b><br>cubic-bezier(0.22, 1, 0.36, 1)</div>
+      <div><b style="color:var(--charcoal)">duration-quick</b><br>200ms — hovers, taps</div>
+      <div><b style="color:var(--charcoal)">duration-base</b><br>400ms — buttons, nav underline</div>
+      <div><b style="color:var(--charcoal)">duration-reveal</b><br>900ms — scroll reveals, mask-ins</div>
+    </div>
+  </section>
+
+  <footer>
+    <p>WHITE ELEGANCE 24 — Design Tokens · Phase 2 of 6 · Approve to proceed to Phase 3 (Homepage Design)</p>
+  </footer>
+
+</body>
+</html>

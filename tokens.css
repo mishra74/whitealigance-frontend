@@ -1,0 +1,76 @@
+/* ============================================================
+   WHITE ELEGANCE 24 — Design Tokens
+   Phase 2 deliverable. Drop into globals.css or map into
+   tailwind.config.ts (theme.extend) for the Phase 6 build.
+   ============================================================ */
+
+:root {
+  /* ---- Color ---- */
+  --pearl-white:  #FAF9F6; /* primary background */
+  --ivory:        #F5F0E6; /* cards, secondary surfaces */
+  --cream:        #EFE6D8; /* hairlines, dividers */
+  --warm-beige:   #D9C7AE; /* borders, placeholder fills */
+  --champagne:    #C9A876; /* secondary accent / hover */
+  --soft-gold:    #B8935A; /* primary accent — CTAs, thread motif */
+  --muted-bronze: #8B6F47; /* icons, eyebrows, labels */
+  --warm-gray:    #6B6560; /* body copy */
+  --charcoal:     #2B2825; /* headings, primary text (never pure #000) */
+
+  /* ---- Typography ---- */
+  --font-display: 'Fraunces', serif;
+  --font-body: 'Instrument Sans', sans-serif;
+
+  --text-hero: clamp(2.6rem, 8vw, 5.2rem);
+  --text-h1:   clamp(2rem, 5vw, 3rem);
+  --text-h2:   clamp(1.5rem, 3.5vw, 2.1rem);
+  --text-h3:   clamp(1.25rem, 2.5vw, 1.6rem);
+  --text-body-lg: 1.2rem;
+  --text-body: 1rem;
+  --text-caption: 0.72rem;
+
+  /* ---- Spacing (base 4px) ---- */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 16px;
+  --space-4: 24px;
+  --space-5: 32px;
+  --space-6: 48px;
+  --space-7: 64px;
+  --space-8: 96px;
+  --space-9: 128px;
+  --space-10: 160px;
+
+  /* ---- Motion ---- */
+  --ease-fabric: cubic-bezier(0.22, 1, 0.36, 1);
+  --duration-quick: 200ms;
+  --duration-base: 400ms;
+  --duration-reveal: 900ms;
+  --duration-hero-transition: 1800ms; /* dupatta unfold, hero -> section 2 */
+}
+
+/* ============================================================
+   Tailwind mapping reference (theme.extend in tailwind.config.ts)
+   ------------------------------------------------------------
+   colors: {
+     'pearl-white':  '#FAF9F6',
+     ivory:          '#F5F0E6',
+     cream:          '#EFE6D8',
+     'warm-beige':   '#D9C7AE',
+     champagne:      '#C9A876',
+     'soft-gold':    '#B8935A',
+     'muted-bronze': '#8B6F47',
+     'warm-gray':    '#6B6560',
+     charcoal:       '#2B2825',
+   },
+   fontFamily: {
+     display: ['Fraunces', 'serif'],
+     body: ['Instrument Sans', 'sans-serif'],
+   },
+   spacing: {
+     '1': '4px', '2': '8px', '3': '16px', '4': '24px', '5': '32px',
+     '6': '48px', '7': '64px', '8': '96px', '9': '128px', '10': '160px',
+   },
+   transitionTimingFunction: {
+     fabric: 'cubic-bezier(0.22, 1, 0.36, 1)',
+   },
+   ============================================================ */

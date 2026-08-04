@@ -1,0 +1,493 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>WHITE ELEGANCE 24 — Homepage</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;0,9..144,500;0,9..144,600;1,9..144,400;1,9..144,500&family=Instrument+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+<style>
+  :root{
+    --pearl-white:#FAF9F6; --ivory:#F5F0E6; --cream:#EFE6D8; --warm-beige:#D9C7AE;
+    --champagne:#C9A876; --soft-gold:#B8935A; --muted-bronze:#8B6F47;
+    --warm-gray:#6B6560; --charcoal:#2B2825;
+    --font-display:'Fraunces',serif; --font-body:'Instrument Sans',sans-serif;
+    --ease-fabric: cubic-bezier(0.22,1,0.36,1);
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{
+    background:var(--pearl-white); color:var(--charcoal); font-family:var(--font-body);
+    line-height:1.6; -webkit-font-smoothing:antialiased; overflow-x:hidden; cursor:none;
+  }
+  a{color:inherit; text-decoration:none;}
+  img,.ph{display:block;}
+  .wrap{max-width:1320px; margin:0 auto; padding:0 56px;}
+  .eyebrow{font-size:.72rem; font-weight:600; letter-spacing:.22em; text-transform:uppercase; color:var(--muted-bronze);}
+
+  /* placeholder "photography" blocks — swap for real assets in Phase 6 */
+  .ph{background-size:cover; background-position:center; position:relative; overflow:hidden;}
+  .ph::after{content:attr(data-label); position:absolute; bottom:14px; left:14px; font-size:.62rem; letter-spacing:.14em; text-transform:uppercase; color:rgba(255,255,255,.7); font-family:var(--font-body);}
+  .ph-hero{background:
+      radial-gradient(ellipse 60% 50% at 30% 20%, rgba(255,248,235,.55), transparent 60%),
+      linear-gradient(150deg, #EADFC7 0%, #D9C7AE 35%, #B8935A 70%, #8B6F47 100%);}
+  .ph-warm1{background:linear-gradient(160deg, var(--cream), var(--warm-beige));}
+  .ph-warm2{background:linear-gradient(200deg, var(--warm-beige), var(--champagne));}
+  .ph-warm3{background:linear-gradient(180deg, var(--ivory), var(--cream) 60%, var(--warm-beige));}
+  .ph-dark{background:linear-gradient(160deg, #3a352f, var(--charcoal));}
+
+  /* ===== custom cursor ===== */
+  .cursor{position:fixed; top:0; left:0; width:22px; height:22px; border:1px solid var(--soft-gold); border-radius:50%; pointer-events:none; z-index:9999; transform:translate(-50%,-50%); transition:width .3s var(--ease-fabric), height .3s var(--ease-fabric), background .3s var(--ease-fabric); mix-blend-mode:difference;}
+  .cursor.grow{width:52px; height:52px; background:rgba(184,147,90,.25);}
+  @media(hover:none){ .cursor{display:none;} body{cursor:auto;} }
+
+  /* ===== header ===== */
+  header{position:fixed; top:0; left:0; width:100%; z-index:500; padding:28px 56px; display:flex; align-items:center; justify-content:space-between; transition:all .5s var(--ease-fabric); background:transparent;}
+  header.solid{ background:rgba(250,249,246,.85); backdrop-filter:blur(14px); padding:18px 56px; box-shadow:0 1px 0 var(--cream);}
+  .logo{font-family:var(--font-display); font-size:1.15rem; letter-spacing:.08em; font-weight:500; color:var(--pearl-white); transition:color .5s var(--ease-fabric);}
+  header.solid .logo{color:var(--charcoal);}
+  nav.main-nav{display:flex; gap:38px;}
+  .nav-link{font-size:.68rem; letter-spacing:.16em; text-transform:uppercase; color:var(--pearl-white); position:relative; padding-bottom:6px; cursor:pointer; transition:color .5s var(--ease-fabric);}
+  header.solid .nav-link{color:var(--charcoal);}
+  .nav-link::after{content:''; position:absolute; left:0; bottom:0; width:0; height:1px; background:var(--soft-gold); transition:width .35s var(--ease-fabric);}
+  .nav-link:hover::after{width:100%;}
+  .header-icons{display:flex; gap:26px; align-items:center;}
+  .icon{width:16px; height:16px; color:var(--pearl-white); transition:color .5s var(--ease-fabric); cursor:pointer;}
+  header.solid .icon{color:var(--charcoal);}
+  .logo{white-space:nowrap;}
+  .nav-link{white-space:nowrap;}
+
+  /* hamburger + mobile nav (breakpoint below which the full nav has no room) */
+  .hamburger{display:none; flex-direction:column; gap:5px; cursor:pointer; width:22px;}
+  .hamburger span{display:block; width:100%; height:1px; background:var(--pearl-white); transition:background .5s var(--ease-fabric);}
+  header.solid .hamburger span{background:var(--charcoal);}
+  .mobile-nav{position:fixed; inset:0; background:var(--pearl-white); z-index:600; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:26px; transform:translateY(-100%); opacity:0; transition:transform .5s var(--ease-fabric), opacity .5s var(--ease-fabric); pointer-events:none;}
+  .mobile-nav.open{transform:translateY(0); opacity:1; pointer-events:auto;}
+  .mobile-nav a{font-family:var(--font-display); font-size:1.7rem; color:var(--charcoal);}
+  .mobile-nav .close-btn{position:absolute; top:30px; right:34px; font-size:1.3rem; cursor:pointer; color:var(--charcoal);}
+
+  @media (max-width:1100px){
+    header{padding:22px 32px;}
+    header.solid{padding:16px 32px;}
+    nav.main-nav{display:none;}
+    .hamburger{display:flex;}
+    .header-icons{gap:16px;}
+    .wrap, .section{padding-left:32px; padding-right:32px;}
+  }
+
+  /* mega menu */
+  .mega{position:fixed; top:0; left:0; width:100%; background:var(--pearl-white); padding:140px 56px 64px; display:flex; gap:48px; z-index:400; transform:translateY(-100%); opacity:0; transition:transform .5s var(--ease-fabric), opacity .5s var(--ease-fabric); pointer-events:none;}
+  .mega.open{transform:translateY(0); opacity:1; pointer-events:auto;}
+  .mega-card{flex:1; position:relative; height:320px; overflow:hidden; cursor:pointer;}
+  .mega-card .ph{width:100%; height:100%; transition:transform .7s var(--ease-fabric);}
+  .mega-card:hover .ph{transform:scale(1.06);}
+  .mega-card span{position:absolute; bottom:22px; left:22px; color:var(--pearl-white); font-family:var(--font-display); font-size:1.6rem;}
+
+  /* ===== hero ===== */
+  .hero{position:relative; height:100vh; min-height:680px; display:flex; align-items:center; justify-content:center; text-align:center; overflow:hidden;}
+  .hero .ph{position:absolute; inset:0; width:100%; height:100%;}
+  .hero-inner{position:relative; z-index:5; color:var(--pearl-white);}
+  .hero-inner .eyebrow{color:var(--pearl-white); opacity:.85; display:block; margin-bottom:22px;}
+  .hero-headline{font-family:var(--font-display); font-weight:400; font-size:clamp(2.6rem,6.4vw,5.6rem); line-height:1.04; letter-spacing:-.01em; max-width:920px;}
+  .hero-headline .char{display:inline-block; opacity:0; transform:translateY(40px);}
+  .hero-cta{display:inline-block; margin-top:40px; padding:17px 38px; border:1px solid var(--pearl-white); font-size:.72rem; letter-spacing:.16em; text-transform:uppercase; color:var(--pearl-white); position:relative; transition:background .4s var(--ease-fabric), color .4s var(--ease-fabric);}
+  .hero-cta:hover{background:var(--pearl-white); color:var(--charcoal);}
+  .scroll-cue{position:absolute; bottom:36px; left:50%; transform:translateX(-50%); width:1px; height:56px; background:rgba(250,249,246,.5); z-index:5; overflow:hidden;}
+  .scroll-cue::after{content:''; position:absolute; top:-100%; left:0; width:100%; height:100%; background:var(--pearl-white); animation:cue 2.2s ease-in-out infinite;}
+  @keyframes cue{0%{top:-100%;} 60%{top:100%;} 100%{top:100%;}}
+
+  /* dupatta unfold transition */
+  .unfold-wrap{position:relative; height:0;}
+  .unfold-svg{position:absolute; bottom:0; left:0; width:100%; height:46vw; max-height:640px; transform:translateY(30%); z-index:20;}
+
+  /* ===== section shell ===== */
+  .section{padding:180px 56px; position:relative;}
+  .section-head{text-align:center; max-width:640px; margin:0 auto 64px;}
+  .thread{width:60px; height:1px; background:var(--soft-gold); margin:18px auto 0;}
+  .section-title{font-family:var(--font-display); font-weight:400; font-size:clamp(2rem,4vw,3.2rem); letter-spacing:-.01em; margin-top:18px;}
+
+  /* Why White */
+  .why-white{background:var(--ivory); text-align:center;}
+  .why-white .big{font-family:var(--font-display); font-style:italic; font-weight:400; font-size:clamp(2rem,5vw,3.6rem); max-width:820px; margin:22px auto 30px; line-height:1.2;}
+  .why-white p{max-width:520px; margin:0 auto; color:var(--warm-gray); font-size:1.05rem;}
+
+  /* Meaning of white blocks */
+  .meaning-block{height:100vh; min-height:560px; display:flex; align-items:center; justify-content:center; position:relative; text-align:center; overflow:hidden;}
+  .meaning-block .ph{position:absolute; inset:0;}
+  .meaning-inner{position:relative; z-index:3; color:var(--pearl-white); opacity:.25; transform:translateY(24px) scale(.97); transition:opacity .9s var(--ease-fabric), transform .9s var(--ease-fabric);}
+  .meaning-block.active .meaning-inner{opacity:1; transform:translateY(0) scale(1);}
+  .meaning-num{font-size:.7rem; letter-spacing:.2em; text-transform:uppercase; opacity:.8; display:block; margin-bottom:14px;}
+  .meaning-word{font-family:var(--font-display); font-weight:400; font-size:clamp(2.6rem,7vw,5.4rem);}
+  .meaning-sub{font-size:1rem; margin-top:16px; opacity:.85; font-style:italic; font-family:var(--font-display);}
+
+  /* Collections */
+  .collections{display:flex; gap:2px; height:88vh; min-height:560px;}
+  .coll-card{flex:1; position:relative; overflow:hidden; cursor:pointer;}
+  .coll-card .ph{position:absolute; inset:0; transition:transform .8s var(--ease-fabric), filter .8s var(--ease-fabric);}
+  .coll-card:hover .ph{transform:scale(1.06);}
+  .coll-card::before{content:''; position:absolute; inset:0; background:linear-gradient(0deg, rgba(0,0,0,.45), rgba(0,0,0,0) 55%); z-index:1;}
+  .coll-content{position:absolute; bottom:56px; left:56px; z-index:2; color:var(--pearl-white);}
+  .coll-content .eyebrow{color:var(--pearl-white); opacity:.85;}
+  .coll-content h3{font-family:var(--font-display); font-weight:400; font-size:clamp(2rem,3.5vw,3rem); margin:10px 0 14px;}
+  .coll-link{font-size:.7rem; letter-spacing:.14em; text-transform:uppercase; border-bottom:1px solid var(--pearl-white); padding-bottom:4px;}
+
+  /* Philosophy */
+  .philosophy{background:var(--pearl-white);}
+  .phil-grid{display:grid; grid-template-columns:1fr 1fr; gap:96px; align-items:center;}
+  .phil-img .ph{height:520px;}
+  .phil-item{display:flex; gap:22px; margin-bottom:44px;}
+  .phil-item:last-child{margin-bottom:0;}
+  .phil-mark{width:34px; height:1px; background:var(--soft-gold); margin-top:14px; flex-shrink:0;}
+  .phil-item h4{font-family:var(--font-display); font-size:1.3rem; margin-bottom:8px;}
+  .phil-item p{color:var(--warm-gray); font-size:.95rem; max-width:360px;}
+
+  /* Film */
+  .film{position:relative; height:88vh; min-height:520px; display:flex; align-items:center; justify-content:center; overflow:hidden;}
+  .film .ph{position:absolute; inset:0;}
+  .film::before{content:''; position:absolute; inset:0; background:rgba(20,17,14,.35); z-index:1;}
+  .film-inner{position:relative; z-index:2; text-align:center; color:var(--pearl-white);}
+  .play-btn{width:78px; height:78px; border:1px solid rgba(250,249,246,.7); border-radius:50%; display:flex; align-items:center; justify-content:center; margin:0 auto 26px; cursor:pointer; transition:transform .4s var(--ease-fabric), background .4s var(--ease-fabric);}
+  .play-btn:hover{transform:scale(1.1); background:rgba(250,249,246,.12);}
+  .film-inner h3{font-family:var(--font-display); font-size:clamp(1.6rem,3vw,2.4rem); font-weight:400;}
+  .film-inner p{font-size:.85rem; opacity:.75; margin-top:10px; letter-spacing:.04em;}
+
+  /* Instagram */
+  .insta{background:var(--ivory);}
+  .insta-grid{display:grid; grid-template-columns:repeat(4,1fr); gap:2px; margin-top:56px;}
+  .insta-tile{aspect-ratio:1; position:relative; overflow:hidden; cursor:pointer;}
+  .insta-tile .ph{position:absolute; inset:0; transition:transform .6s var(--ease-fabric);}
+  .insta-tile:hover .ph{transform:scale(1.08);}
+
+  /* Newsletter */
+  .newsletter{text-align:center; background:var(--charcoal); color:var(--pearl-white);}
+  .newsletter .section-title{color:var(--pearl-white);}
+  .newsletter p{color:rgba(250,249,246,.7); max-width:420px; margin:16px auto 40px;}
+  .nl-form{display:flex; max-width:420px; margin:0 auto; border-bottom:1px solid rgba(250,249,246,.4);}
+  .nl-form input{flex:1; background:transparent; border:none; padding:14px 4px; color:var(--pearl-white); font-family:var(--font-body); font-size:.95rem; outline:none;}
+  .nl-form input::placeholder{color:rgba(250,249,246,.45);}
+  .nl-form button{background:none; border:none; color:var(--soft-gold); font-size:.7rem; letter-spacing:.14em; text-transform:uppercase; cursor:pointer; padding:14px 4px;}
+
+  /* Footer */
+  footer{background:var(--pearl-white); padding:96px 56px 40px;}
+  .foot-grid{display:grid; grid-template-columns:1.6fr 1fr 1fr 1fr; gap:48px; padding-bottom:64px; border-bottom:1px solid var(--cream);}
+  .foot-brand{font-family:var(--font-display); font-size:1.3rem; margin-bottom:14px;}
+  .foot-grid p{color:var(--warm-gray); font-size:.88rem; max-width:280px;}
+  .foot-col h5{font-size:.68rem; letter-spacing:.16em; text-transform:uppercase; color:var(--muted-bronze); margin-bottom:18px;}
+  .foot-col a{display:block; font-size:.88rem; color:var(--charcoal); margin-bottom:12px; opacity:.85;}
+  .foot-col a:hover{color:var(--soft-gold);}
+  .foot-bottom{display:flex; justify-content:space-between; padding-top:28px; font-size:.76rem; color:var(--warm-gray); flex-wrap:wrap; gap:10px;}
+
+  @media (prefers-reduced-motion: reduce){
+    *{animation-duration:.001ms !important; transition-duration:.001ms !important;}
+  }
+</style>
+</head>
+<body>
+
+<div class="cursor" id="cursor"></div>
+
+<!-- ===================== HEADER ===================== -->
+<header id="siteHeader">
+  <div class="logo">WHITE ELEGANCE 24</div>
+  <nav class="main-nav">
+    <span class="nav-link">Home</span>
+    <span class="nav-link" id="megaTrigger">Collections</span>
+    <span class="nav-link">Party Wear</span>
+    <span class="nav-link">Casual Wear</span>
+    <span class="nav-link">About</span>
+    <span class="nav-link">Journal</span>
+    <span class="nav-link">Contact</span>
+  </nav>
+  <div class="header-icons">
+    <span class="icon" title="Search">⌕</span>
+    <span class="icon" title="Wishlist">♡</span>
+    <span class="icon" title="Account">◈</span>
+    <span class="icon" title="Cart">⛃</span>
+    <div class="hamburger" id="hamburgerBtn"><span></span><span></span><span></span></div>
+  </div>
+</header>
+
+<div class="mega" id="megaMenu">
+  <div class="mega-card"><div class="ph ph-warm2" style="width:100%;height:100%;" data-label="Party Wear — lookbook"></div><span>Party Wear</span></div>
+  <div class="mega-card"><div class="ph ph-warm3" style="width:100%;height:100%;" data-label="Casual Wear — lookbook"></div><span>Casual Wear</span></div>
+</div>
+
+<div class="mobile-nav" id="mobileNav">
+  <span class="close-btn" id="mobileClose">✕</span>
+  <a href="#">Home</a>
+  <a href="#">Collections</a>
+  <a href="#">Party Wear</a>
+  <a href="#">Casual Wear</a>
+  <a href="#">About</a>
+  <a href="#">Journal</a>
+  <a href="#">Contact</a>
+</div>
+
+<!-- ===================== 1. HERO ===================== -->
+<section class="hero">
+  <div class="ph ph-hero" data-label="Full-bleed slow-motion film — flowing white dress, golden hour"></div>
+  <div class="hero-inner">
+    <span class="eyebrow">White Elegance 24</span>
+    <h1 class="hero-headline" id="heroHeadline">White is not a Color. It is Confidence.</h1>
+    <a class="hero-cta magnetic">Explore the Collection</a>
+  </div>
+  <div class="scroll-cue"></div>
+</section>
+
+<div class="unfold-wrap">
+  <svg class="unfold-svg" id="unfoldSvg" viewBox="0 0 1440 400" preserveAspectRatio="none">
+    <path fill="#FAF9F6" d="M0,120 C240,10 400,220 720,140 C1040,60 1200,200 1440,110 L1440,400 L0,400 Z"/>
+  </svg>
+</div>
+
+<!-- ===================== 2. WHY WHITE ===================== -->
+<section class="section why-white reveal">
+  <span class="eyebrow">Why White</span>
+  <p class="big">White holds nothing back.</p>
+  <p>No print to hide behind, no color to distract. White asks a woman to stand exactly as she is — and that takes more confidence than any other shade.</p>
+</section>
+
+<!-- ===================== 3. THE MEANING OF WHITE ===================== -->
+<div id="meaningWrap">
+  <div class="meaning-block" data-index="01">
+    <div class="ph ph-warm1" data-label="Purity"></div>
+    <div class="meaning-inner"><span class="meaning-num">01 / 07</span><h2 class="meaning-word">Purity</h2><p class="meaning-sub">Nothing added, nothing needed.</p></div>
+  </div>
+  <div class="meaning-block" data-index="02">
+    <div class="ph ph-warm2" data-label="Confidence"></div>
+    <div class="meaning-inner"><span class="meaning-num">02 / 07</span><h2 class="meaning-word">Confidence</h2><p class="meaning-sub">Worn by those who don't ask to be noticed.</p></div>
+  </div>
+  <div class="meaning-block" data-index="03">
+    <div class="ph ph-warm3" data-label="Luxury"></div>
+    <div class="meaning-inner"><span class="meaning-num">03 / 07</span><h2 class="meaning-word">Luxury</h2><p class="meaning-sub">Quiet, considered, unmistakable.</p></div>
+  </div>
+  <div class="meaning-block" data-index="04">
+    <div class="ph ph-dark" data-label="Grace"></div>
+    <div class="meaning-inner"><span class="meaning-num">04 / 07</span><h2 class="meaning-word">Grace</h2><p class="meaning-sub">Movement, not posture.</p></div>
+  </div>
+  <div class="meaning-block" data-index="05">
+    <div class="ph ph-warm2" data-label="Strength"></div>
+    <div class="meaning-inner"><span class="meaning-num">05 / 07</span><h2 class="meaning-word">Strength</h2><p class="meaning-sub">Softness that doesn't apologize.</p></div>
+  </div>
+  <div class="meaning-block" data-index="06">
+    <div class="ph ph-warm1" data-label="Timeless Beauty"></div>
+    <div class="meaning-inner"><span class="meaning-num">06 / 07</span><h2 class="meaning-word">Timeless Beauty</h2><p class="meaning-sub">Never in season, never out of it.</p></div>
+  </div>
+  <div class="meaning-block" data-index="07">
+    <div class="ph ph-dark" data-label="Minimalism"></div>
+    <div class="meaning-inner"><span class="meaning-num">07 / 07</span><h2 class="meaning-word">Minimalism</h2><p class="meaning-sub">Less fabric. More presence.</p></div>
+  </div>
+</div>
+
+<!-- ===================== 4. DISCOVER THE COLLECTIONS ===================== -->
+<section class="section" style="padding-bottom:0;">
+  <div class="section-head">
+    <span class="eyebrow">Shop</span>
+    <h2 class="section-title">Discover the Collections</h2>
+    <div class="thread"></div>
+  </div>
+</section>
+<div class="collections">
+  <div class="coll-card">
+    <div class="ph ph-warm2" data-label="Party Wear"></div>
+    <div class="coll-content">
+      <span class="eyebrow">01</span>
+      <h3>Party Wear</h3>
+      <span class="coll-link">For the room that turns when you enter</span>
+    </div>
+  </div>
+  <div class="coll-card">
+    <div class="ph ph-warm3" data-label="Casual Wear"></div>
+    <div class="coll-content">
+      <span class="eyebrow">02</span>
+      <h3>Casual Wear</h3>
+      <span class="coll-link">For every day worth dressing well for</span>
+    </div>
+  </div>
+</div>
+
+<!-- ===================== 5. BRAND PHILOSOPHY ===================== -->
+<section class="section philosophy reveal">
+  <div class="phil-grid">
+    <div class="phil-img"><div class="ph ph-warm1" data-label="Atelier — tailoring detail" style="width:100%;height:100%;"></div></div>
+    <div>
+      <span class="eyebrow">Philosophy</span>
+      <h2 class="section-title" style="margin-bottom:44px;">Crafted, not manufactured.</h2>
+      <div class="phil-item"><div class="phil-mark"></div><div><h4>Fabric</h4><p>Sourced for how it moves, not just how it looks.</p></div></div>
+      <div class="phil-item"><div class="phil-mark"></div><div><h4>Tailoring</h4><p>Cut close to the body, cut for real women.</p></div></div>
+      <div class="phil-item"><div class="phil-mark"></div><div><h4>Comfort</h4><p>Luxury you forget you're wearing.</p></div></div>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== 6. EDITORIAL FASHION FILM ===================== -->
+<section class="film">
+  <div class="ph ph-dark" data-label="Editorial film — music only, no dialogue"></div>
+  <div class="film-inner">
+    <div class="play-btn">▶</div>
+    <h3>Watch the Film</h3>
+    <p>A short film. No dialogue. Just white, in motion.</p>
+  </div>
+</section>
+
+<!-- ===================== 7. INSTAGRAM GALLERY ===================== -->
+<section class="section insta reveal">
+  <div class="section-head">
+    <span class="eyebrow">Follow the Story</span>
+    <h2 class="section-title">@whiteelegance24</h2>
+    <div class="thread"></div>
+  </div>
+  <div class="insta-grid">
+    <div class="insta-tile"><div class="ph ph-warm1" style="width:100%;height:100%;"></div></div>
+    <div class="insta-tile"><div class="ph ph-warm2" style="width:100%;height:100%;"></div></div>
+    <div class="insta-tile"><div class="ph ph-warm3" style="width:100%;height:100%;"></div></div>
+    <div class="insta-tile"><div class="ph ph-dark" style="width:100%;height:100%;"></div></div>
+    <div class="insta-tile"><div class="ph ph-warm3" style="width:100%;height:100%;"></div></div>
+    <div class="insta-tile"><div class="ph ph-warm2" style="width:100%;height:100%;"></div></div>
+    <div class="insta-tile"><div class="ph ph-dark" style="width:100%;height:100%;"></div></div>
+    <div class="insta-tile"><div class="ph ph-warm1" style="width:100%;height:100%;"></div></div>
+  </div>
+</section>
+
+<!-- ===================== 8. NEWSLETTER ===================== -->
+<section class="section newsletter reveal">
+  <span class="eyebrow" style="color:var(--soft-gold)">Stay Close</span>
+  <h2 class="section-title">Be the first to know.</h2>
+  <p>New arrivals, early access, nothing else.</p>
+  <div class="nl-form">
+    <input type="email" placeholder="Your email address">
+    <button>Subscribe</button>
+  </div>
+</section>
+
+<!-- ===================== 9. FOOTER ===================== -->
+<footer>
+  <div class="foot-grid">
+    <div>
+      <div class="foot-brand">WHITE ELEGANCE 24</div>
+      <p>A luxury fashion label devoted exclusively to elegant white clothing for women.</p>
+    </div>
+    <div class="foot-col">
+      <h5>Shop</h5>
+      <a href="#">Party Wear</a><a href="#">Casual Wear</a><a href="#">New Arrivals</a>
+    </div>
+    <div class="foot-col">
+      <h5>Company</h5>
+      <a href="#">About</a><a href="#">Journal</a><a href="#">Contact</a>
+    </div>
+    <div class="foot-col">
+      <h5>Contact</h5>
+      <a href="#">www.whiteelegance24.com</a>
+      <a href="#">+91 89768 39119 (WhatsApp)</a>
+      <a href="#">amruta.nilatkar.47@gmail.com</a>
+    </div>
+  </div>
+  <div class="foot-bottom">
+    <span>© 2026 WHITE ELEGANCE 24. All rights reserved.</span>
+    <span>Privacy Policy · Shipping · Returns</span>
+  </div>
+</footer>
+
+<script>
+gsap.registerPlugin(ScrollTrigger);
+
+/* custom cursor */
+const cursor = document.getElementById('cursor');
+window.addEventListener('mousemove', e=>{
+  cursor.style.left = e.clientX+'px'; cursor.style.top = e.clientY+'px';
+});
+document.querySelectorAll('a, .icon, .nav-link, .coll-card, .insta-tile, .play-btn, .mega-card').forEach(el=>{
+  el.addEventListener('mouseenter', ()=>cursor.classList.add('grow'));
+  el.addEventListener('mouseleave', ()=>cursor.classList.remove('grow'));
+});
+
+/* header solid state */
+ScrollTrigger.create({
+  start: 'top -80',
+  end: 99999,
+  toggleClass: {targets: '#siteHeader', className: 'solid'}
+});
+
+/* mobile nav toggle */
+const hamburgerBtn = document.getElementById('hamburgerBtn');
+const mobileNav = document.getElementById('mobileNav');
+const mobileClose = document.getElementById('mobileClose');
+hamburgerBtn.addEventListener('click', ()=> mobileNav.classList.add('open'));
+mobileClose.addEventListener('click', ()=> mobileNav.classList.remove('open'));
+mobileNav.querySelectorAll('a').forEach(a=> a.addEventListener('click', ()=> mobileNav.classList.remove('open')));
+
+/* mega menu toggle */
+const megaTrigger = document.getElementById('megaTrigger');
+const megaMenu = document.getElementById('megaMenu');
+let megaOpen = false;
+megaTrigger.addEventListener('click', ()=>{
+  megaOpen = !megaOpen;
+  megaMenu.classList.toggle('open', megaOpen);
+});
+document.addEventListener('click', (e)=>{
+  if(megaOpen && !megaMenu.contains(e.target) && e.target!==megaTrigger){
+    megaOpen = false; megaMenu.classList.remove('open');
+  }
+});
+
+/* hero character reveal */
+const headline = document.getElementById('heroHeadline');
+const text = headline.textContent;
+headline.innerHTML = text.split('').map(c => c===' ' ? ' ' : `<span class="char">${c}</span>`).join('');
+gsap.to('.hero-headline .char', {
+  opacity:1, y:0, duration:.9, ease:'power3.out', stagger:0.02, delay:.3
+});
+gsap.from('.hero-inner .eyebrow, .hero-cta', {opacity:0, y:16, duration:.9, ease:'power3.out', stagger:.15, delay:.15});
+
+/* magnetic button */
+document.querySelectorAll('.magnetic').forEach(btn=>{
+  btn.addEventListener('mousemove', e=>{
+    const r = btn.getBoundingClientRect();
+    const x = e.clientX - r.left - r.width/2;
+    const y = e.clientY - r.top - r.height/2;
+    gsap.to(btn, {x:x*0.3, y:y*0.4, duration:.4, ease:'power3.out'});
+  });
+  btn.addEventListener('mouseleave', ()=>gsap.to(btn, {x:0, y:0, duration:.5, ease:'elastic.out(1,0.4)'}));
+});
+
+/* dupatta unfold — hero to section 2 */
+gsap.to('#unfoldSvg', {
+  y: '-100%',
+  ease:'none',
+  scrollTrigger:{ trigger:'.hero', start:'bottom bottom', end:'bottom top', scrub:1 }
+});
+gsap.fromTo('.hero-inner', {opacity:1}, {
+  opacity:0, y:-40, ease:'none',
+  scrollTrigger:{ trigger:'.hero', start:'top top', end:'bottom top', scrub:1 }
+});
+
+/* generic section reveal */
+document.querySelectorAll('.reveal').forEach(sec=>{
+  gsap.from(sec.children, {
+    opacity:0, y:36, duration:1, ease:'power3.out', stagger:.12,
+    scrollTrigger:{ trigger:sec, start:'top 75%' }
+  });
+});
+
+/* meaning-of-white active block */
+document.querySelectorAll('.meaning-block').forEach(block=>{
+  ScrollTrigger.create({
+    trigger:block, start:'top 55%', end:'bottom 45%',
+    onEnter:()=>block.classList.add('active'),
+    onEnterBack:()=>block.classList.add('active'),
+    onLeave:()=>block.classList.remove('active'),
+    onLeaveBack:()=>block.classList.remove('active'),
+  });
+});
+
+/* philosophy image parallax */
+gsap.to('.phil-img .ph', {
+  yPercent:-10, ease:'none',
+  scrollTrigger:{ trigger:'.philosophy', start:'top bottom', end:'bottom top', scrub:1 }
+});
+</script>
+</body>
+</html>

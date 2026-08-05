@@ -5,41 +5,90 @@ import { useRouter } from "next/navigation";
 import PlaceholderImage from "@/components/ui/PlaceholderImage";
 import buttons from "@/styles/buttons.module.css";
 import { useAuth } from "@/lib/auth-context";
+import { signup, login } from "@/lib/api";
 
 type Tab = "login" | "register";
 
 export default function LoginPage() {
   const router = useRouter();
-  const { user, hydrated, login, register } = useAuth();
+  const { user, hydrated } = useAuth();
   const [tab, setTab] = useState<Tab>("login");
 
-  const [identifier, setIdentifier] = useState("");
-  const [otp, setOtp] = useState(["", "", "", ""]);
-  const [otpSent, setOtpSent] = useState(false);
+  const [loginEmail, setLoginEmail] = useState("");
+  const [loginPassword, setLoginPassword] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [errors, setErrors] = useState("");
 
   const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
+  const [registerEmail, setRegisterEmail] = useState("");
   const [phone, setPhone] = useState("");
+  const [password, setPassword] = useState("");
+  const [passwordConfirmation, setPasswordConfirmation] = useState("");
 
   useEffect(() => {
     if (hydrated && user) router.replace("/account");
   }, [hydrated, user, router]);
 
-  function handleSendOtp(e: FormEvent) {
+  async function handleLogin(e: FormEvent) {
     e.preventDefault();
-    setOtpSent(true);
+
+    setLoading(true);
+    setErrors("");
+
+    try {
+      const res = await login({
+        email: loginEmail,
+        password: loginPassword,
+      });
+
+      if (res.status) {
+        localStorage.setItem("token", res.token);
+
+        if (res.user) {
+          localStorage.setItem("user", JSON.stringify(res.user));
+        }
+
+        router.push("/account");
+      } else {
+        setErrors(res.message || "Invalid email or password");
+      }
+    } catch (error) {
+      console.error(error);
+      setErrors("Unable to login.");
+    } finally {
+      setLoading(false);
+    }
   }
 
-  function handleVerify(e: FormEvent) {
+  async function handleRegister(e: FormEvent) {
     e.preventDefault();
-    login(identifier);
-    router.push("/account");
-  }
 
-  function handleRegister(e: FormEvent) {
-    e.preventDefault();
-    register(name, email, phone);
-    router.push("/account");
+    try {
+      const res = await signup({
+        name,
+        email: registerEmail,
+        phone,
+        password,
+        password_confirmation: passwordConfirmation,
+      });
+
+      if (res.status) {
+        localStorage.setItem("token", res.token);
+
+        if (res.user) {
+          localStorage.setItem("user", JSON.stringify(res.user));
+        }
+
+        router.push("/account");
+      } else if (res.errors) {
+        setErrors(JSON.stringify(res.errors));
+      } else {
+        setErrors(res.message || "Registration failed.");
+      }
+    } catch (error) {
+      console.error(error);
+      setErrors("Unable to register.");
+    }
   }
 
   return (
@@ -87,66 +136,47 @@ export default function LoginPage() {
           </div>
 
           {tab === "login" ? (
-            <form onSubmit={otpSent ? handleVerify : handleSendOtp}>
-              <div className="mb-3.5">
+            <form onSubmit={handleLogin}>
+              <div className="mb-4">
                 <label className="mb-2 block text-[0.68rem] uppercase tracking-[0.14em] text-warm-gray">
-                  Phone or Email
+                  Email
                 </label>
+
                 <input
-                  type="text"
+                  type="email"
                   required
-                  disabled={otpSent}
-                  value={identifier}
-                  onChange={(e) => setIdentifier(e.target.value)}
-                  className="w-full border-b border-warm-beige bg-transparent px-0.5 py-2.5 text-[0.95rem] outline-none focus:border-soft-gold disabled:opacity-60"
+                  value={loginEmail}
+                  onChange={(e) => setLoginEmail(e.target.value)}
+                  className="w-full border-b border-warm-beige bg-transparent px-0.5 py-2.5 text-[0.95rem] outline-none focus:border-soft-gold"
+                  placeholder="Enter your email"
                 />
               </div>
 
-              {otpSent && (
-                <>
-                  <p className="mb-3.5 text-[0.78rem] text-warm-gray">
-                    No live SMS gateway is connected yet — enter any 4 digits
-                    to continue in demo mode.
-                  </p>
-                  <div className="mb-5 flex gap-2.5">
-                    {otp.map((digit, i) => (
-                      <input
-                        key={i}
-                        type="text"
-                        inputMode="numeric"
-                        maxLength={1}
-                        required
-                        value={digit}
-                        onChange={(e) => {
-                          const v = e.target.value.replace(/\D/g, "").slice(0, 1);
-                          setOtp((prev) => prev.map((d, idx) => (idx === i ? v : d)));
-                        }}
-                        className="h-[52px] w-11 border border-warm-beige text-center text-[1.1rem] outline-none focus:border-soft-gold"
-                      />
-                    ))}
-                  </div>
-                </>
-              )}
+              <div className="mb-6">
+                <label className="mb-2 block text-[0.68rem] uppercase tracking-[0.14em] text-warm-gray">
+                  Password
+                </label>
+
+                <input
+                  type="password"
+                  required
+                  value={loginPassword}
+                  onChange={(e) => setLoginPassword(e.target.value)}
+                  className="w-full border-b border-warm-beige bg-transparent px-0.5 py-2.5 text-[0.95rem] outline-none focus:border-soft-gold"
+                  placeholder="Enter your password"
+                />
+              </div>
 
               <button
                 type="submit"
+                disabled={loading}
                 className={`${buttons.btn} ${buttons.primary} ${buttons.block}`}
               >
-                {otpSent ? "Verify & Log In" : "Send OTP"}
+                {loading ? "Logging in..." : "Log In"}
               </button>
-              {otpSent && (
-                <div className="mt-4 flex justify-between text-[0.78rem]">
-                  <button
-                    type="button"
-                    onClick={() => setOtpSent(false)}
-                    className="text-soft-gold"
-                  >
-                    Change number
-                  </button>
-                  <button type="button" className="text-soft-gold">
-                    Resend OTP
-                  </button>
-                </div>
+
+              {errors && (
+                <p className="mt-4 text-sm text-red-500">{errors}</p>
               )}
             </form>
           ) : (
@@ -170,8 +200,8 @@ export default function LoginPage() {
                 <input
                   type="email"
                   required
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
+                  value={registerEmail}
+                  onChange={(e) => setRegisterEmail(e.target.value)}
                   className="w-full border-b border-warm-beige bg-transparent px-0.5 py-2.5 text-[0.95rem] outline-none focus:border-soft-gold"
                 />
               </div>
@@ -184,6 +214,33 @@ export default function LoginPage() {
                   required
                   value={phone}
                   onChange={(e) => setPhone(e.target.value)}
+                  className="w-full border-b border-warm-beige bg-transparent px-0.5 py-2.5 text-[0.95rem] outline-none focus:border-soft-gold"
+                />
+              </div>
+              <div className="mb-4">
+                <label className="mb-2 block text-[0.68rem] uppercase tracking-[0.14em] text-warm-gray">
+                  Password
+                </label>
+
+                <input
+                  type="password"
+                  required
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  className="w-full border-b border-warm-beige bg-transparent px-0.5 py-2.5 text-[0.95rem] outline-none focus:border-soft-gold"
+                />
+              </div>
+
+              <div className="mb-5">
+                <label className="mb-2 block text-[0.68rem] uppercase tracking-[0.14em] text-warm-gray">
+                  Confirm Password
+                </label>
+
+                <input
+                  type="password"
+                  required
+                  value={passwordConfirmation}
+                  onChange={(e) => setPasswordConfirmation(e.target.value)}
                   className="w-full border-b border-warm-beige bg-transparent px-0.5 py-2.5 text-[0.95rem] outline-none focus:border-soft-gold"
                 />
               </div>

@@ -18,7 +18,7 @@ interface AuthContextValue {
   hydrated: boolean;
   /** No real OTP is sent — this is a local-only demo session, not a backend login. */
   login: (identifier: string) => void;
-  register: (name: string, email: string, phone: string) => void;
+  register: (name: string, email: string, phone: string, password: string, password_confirmation: string) => void;
   logout: () => void;
 }
 
@@ -51,7 +51,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setUser({ name, identifier });
   };
 
-  const register = (name: string, email: string, phone: string) => {
+  const register = (name: string, email: string, phone: string, password: string, password_confirmation: string) => {
     setUser({ name, identifier: email || phone });
   };
 

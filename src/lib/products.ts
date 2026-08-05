@@ -1,52 +1,69 @@
+export type { Collection, Product } from "../../products";
 import type { Collection, Product } from "../../products";
-import { formatINR } from "./format";
-import { getApiProductByHandle, getApiProducts } from "./api";
 
-/* Fetch all products from API */
+import { formatINR } from "./format";
+import {
+  getApiProducts,
+  getApiProductByHandle,
+} from "./api";
+
+/* ===========================
+   Product APIs
+=========================== */
+
 export async function fetchProducts(): Promise<Product[]> {
   return getApiProducts();
 }
 
 export async function getProducts(): Promise<Product[]> {
-  return getApiProducts();
+  return await getApiProducts();
 }
 
-/* Filter by collection */
 export async function getProductsByCollection(
   collection: Collection
 ): Promise<Product[]> {
-  const products = await getProducts();
+  const products = await getApiProducts();
 
   return products.filter(
     (product) => product.collection === collection
   );
 }
 
-/* Single product */
 export async function getProductByHandle(
   handle: string
 ): Promise<Product | undefined> {
-  return getApiProductByHandle(handle);
-}
+return getApiProductByHandle(handle);}
 
-/* Collection label */
+/* ===========================
+   Collection
+=========================== */
+
 export function collectionLabel(collection: Collection): string {
-  return collection === "party-wear"
-    ? "Party Wear"
-    : "Casual Wear";
+  switch (collection) {
+    case "party-wear":
+      return "Party Wear";
+
+    case "casual-wear":
+      return "Casual Wear";
+
+    default:
+      return "";
+  }
 }
 
-/* Collection URL */
 export function collectionHref(collection: Collection): string {
   return `/${collection}`;
 }
 
-/* Similar products */
+/* ===========================
+   Similar Products
+=========================== */
+
 export async function getSimilarProducts(
   product: Product,
   limit = 4
 ): Promise<Product[]> {
-  const products = await getProducts();
+  const products = await getApiProducts();
 
   return products
     .filter(
@@ -57,39 +74,59 @@ export async function getSimilarProducts(
     .slice(0, limit);
 }
 
-/* Price */
+/* ===========================
+   Price
+=========================== */
+
 export function formatPrice(product: Product): string {
-  return formatINR(product.variants[0]?.price.amount ?? 0);
+  return formatINR(
+    product.variants?.[0]?.price?.amount ?? 0
+  );
 }
 
-/* Main image */
+/* ===========================
+   Images
+=========================== */
+
 export function productImageSrc(
   product: Product
 ): string | undefined {
-  return product.images[0]?.url;
+  if (!product.hasPhoto) return undefined;
+
+  return product.images?.[0]?.url ?? undefined;
 }
 
-/* Gallery images */
 export function productImageSrcs(
   product: Product
 ): { url: string; altText: string }[] {
-  return product.images.map((image) => ({
-    url: image.url,
-    altText: image.altText,
-  }));
+  if (!product.hasPhoto) return [];
+
+  return product.images
+    .filter((image) => image.url !== null)
+    .map((image) => ({
+      url: image.url!,
+      altText: image.altText,
+    }));
 }
 
-/* Eyebrow */
-const GENERIC_TAGS = new Set(["occasion", "casual"]);
+/* ===========================
+   Eyebrow
+=========================== */
+
+const GENERIC_TAGS = new Set([
+  "occasion",
+  "casual",
+  "featured",
+]);
 
 export function productEyebrow(
   product: Product,
   fallback: string
 ): string {
   const tag = product.tags.find(
-    (t) =>
-      !GENERIC_TAGS.has(t) &&
-      !t.startsWith("color-family:")
+    (tag) =>
+      !GENERIC_TAGS.has(tag) &&
+      !tag.startsWith("color-family:")
   );
 
   if (!tag) return fallback;
@@ -104,7 +141,10 @@ export function productEyebrow(
     .join(" ");
 }
 
-/* Sorting */
+/* ===========================
+   Sorting
+=========================== */
+
 export type SortKey =
   | "featured"
   | "price-asc"
@@ -143,15 +183,15 @@ export function sortProducts(
     case "price-asc":
       return sorted.sort(
         (a, b) =>
-          a.variants[0].price.amount -
-          b.variants[0].price.amount
+          (a.variants?.[0]?.price?.amount ?? 0) -
+          (b.variants?.[0]?.price?.amount ?? 0)
       );
 
     case "price-desc":
       return sorted.sort(
         (a, b) =>
-          b.variants[0].price.amount -
-          a.variants[0].price.amount
+          (b.variants?.[0]?.price?.amount ?? 0) -
+          (a.variants?.[0]?.price?.amount ?? 0)
       );
 
     case "name-asc":

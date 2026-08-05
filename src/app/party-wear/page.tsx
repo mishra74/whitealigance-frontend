@@ -3,6 +3,7 @@ import Link from "next/link";
 import PlaceholderImage from "@/components/ui/PlaceholderImage";
 import PartyWearEditorial from "@/components/collection/PartyWearEditorial";
 import { getApiProductsByCollection } from "@/lib/api";
+export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
   title: "Party Wear | WHITE ELEGANCE 24",

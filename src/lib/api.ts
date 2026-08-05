@@ -1,114 +1,85 @@
+import type {
+  Product,
+  Collection,
+  ProductImage,
+} from "../../products";// export type Collection = "party-wear" | "casual-wear";
 
+const API_URL =
+  process.env.NEXT_PUBLIC_API_URL ??
+  "https://admin.whiteelegenace24.com/api";
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://127.0.0.1:8000/api";
+interface ApiProductImage {
+  image: string;
+}
 
-function stripHtml(value: string): string {
+interface ApiProduct {
+  id: number;
+  title: string;
+  slug: string;
+  description: string | null;
+  short_description: string |null;
+  category_id: number;
+  sku: string;
+  price: number | string;
+  qty: number | null;
+  status: number;
+  is_featured: string;
+  product_images: ApiProductImage[];
+}
+interface ApiResponse {
+  data: {
+    products: ApiProduct[];
+  };
+}
+
+function stripHtml(value?: string | null): string {
+  if (!value) return "";
+
   return value
-    .replace(/<[^>]+>/g, " ")
+    .replace(/<[^>]*>/g, "")
     .replace(/&nbsp;/g, " ")
-    .replace(/\s+/g, " ")
     .trim();
 }
 
-function getBaseUrl(): string {
-  return API_URL.replace(/\/api\/?$/, "");
+function baseUrl(): string {
+  return API_URL.replace("/api", "");
 }
 
-function buildImageUrl(filename?: string | null): string | undefined {
-  if (!filename) return undefined;
+function imageUrl(image?: string): string {
+  if (!image) return "";
 
-  if (/^https?:\/\//i.test(filename)) {
-    return filename;
+  if (image.startsWith("http")) {
+    return image;
   }
 
-  const url = `${getBaseUrl()}/uploads/product/large/${filename}`;
-
-  console.log("Image URL:", url);
-
-  return url;
+  return `${baseUrl()}/uploads/product/large/${image}`;
 }
 
-function inferCollection(product: Record<string, unknown>): Collection {
-  const haystack = [
-    typeof product.title === "string" ? product.title : "",
-    typeof product.description === "string" ? product.description : "",
-    typeof product.short_description === "string" ? product.short_description : "",
-    typeof product.slug === "string" ? product.slug : "",
-  ]
-    .join(" ")
-    .toLowerCase();
-
-  if (/party|gown|cocktail|evening|festive|bridal|occasion/.test(haystack)) {
-    return "party-wear";
-  }
-
-  if (/casual|office|daily|suit|coord|co-ord|kurta|lounge/.test(haystack)) {
-    return "casual-wear";
-  }
-
-  return "casual-wear";
+function collection(category: number): Collection {
+  return category === 24
+    ? "party-wear"
+    : "casual-wear";
 }
 
-function normalizeApiProduct(product: Record<string, unknown>): Product {
-  const title =
-    typeof product.title === "string"
-      ? product.title
-      : "Untitled Product";
-
-  const handle =
-    typeof product.slug === "string" && product.slug
-      ? product.slug
-      : `product-${product.id}`;
-
-  const description = stripHtml(
-    typeof product.description === "string"
-      ? product.description
-      : typeof product.short_description === "string"
-      ? product.short_description
-      : title
-  );
-
-  const price = Number(product.price ?? 0);
-
-  const qty = Number(product.qty ?? 0);
-
-  const imagesArray = Array.isArray(product["product_images"])
-    ? (product["product_images"] as Array<Record<string, unknown>>)
-    : [];
-
-  const images = imagesArray
-    .map((img) => {
-      const filename =
-        typeof img.image === "string"
-          ? img.image
-          : undefined;
-
-      if (!filename) return null;
-
-      return {
-        url: buildImageUrl(filename)!,
-        altText: title,
-      };
-    })
-    .filter(
-      (
-        image
-      ): image is {
-        url: string;
-        altText: string;
-      } => image !== null
-    );
+function normalize(product: ApiProduct): Product {
+  const images: ProductImage[] =
+  product.product_images?.map((img) => ({
+    url: imageUrl(img.image),
+    altText: product.title,
+  })) ?? [];
 
   return {
-    id: String(product.id ?? handle),
+    id: String(product.id),
 
-    handle,
+    handle: product.slug,
 
-    title,
+    title: product.title,
 
-    description,
+    description:
+      stripHtml(product.description) ||
+      stripHtml(product.short_description),
 
-    collection: inferCollection(product),
+    collection: collection(product.category_id),
 
     hasPhoto: images.length > 0,
 
@@ -116,106 +87,103 @@ function normalizeApiProduct(product: Record<string, unknown>): Product {
 
     variants: [
       {
-        size: "Standard",
+        size: "Free Size",
 
-        sku:
-          typeof product.sku === "string"
-            ? product.sku
-            : String(product.id ?? handle),
+        sku: product.sku,
 
         price: {
-          amount: Number.isFinite(price) ? price : 0,
+          amount: Number(product.price),
           currencyCode: "INR",
         },
 
-        inventoryQuantity: Number.isFinite(qty)
-          ? qty
-          : null,
+        inventoryQuantity: product.qty,
 
-        available: Number(product.status ?? 1) === 1,
+        available: product.status === 1,
       },
     ],
 
     tags: [
-      inferCollection(product),
-      String(product.is_featured).toLowerCase() === "yes"
+      product.is_featured === "Yes"
         ? "featured"
-        : "",
-    ].filter(Boolean),
+        : "normal",
+    ],
   };
 }
 
-export async function getProducts(): Promise<Product[]> {
-  try {
-    const response = await fetch(`${API_URL}/products`, {
-      cache: "no-store",
-      headers: {
-        Accept: "application/json",
-      },
-    });
-
-    if (!response.ok) {
-      throw new Error(`API Error ${response.status}`);
-    }
-
-    const payload = await response.json();
-
-    console.log("Payload", payload);
-
-    const products = Array.isArray(payload?.data?.products)
-      ? payload.data.products
-      : [];
-
-    return products.map((item: Record<string, unknown>) =>
-      normalizeApiProduct(item)
-    );
-  } catch (err) {
-    console.error(err);
-    return PRODUCTS;
-  }
-}
-
-export async function getApiProducts() {
-  return getProducts();
-}
-
-export async function getApiProductsByCollection(collection: Collection) {
-  const products = await getProducts();
-  return products.filter((product: Product) => product.collection === collection);
-}
-
-export async function getApiProductByHandle(handle: string) {
-  const products = await getProducts();
-  return products.find((product: Product) => product.handle === handle);
-}
-
-export async function apiGet(endpoint: string) {
-  const response = await fetch(`${API_URL}${endpoint}`, {
-    cache: "no-store",
-    headers: {
-      Accept: "application/json",
+export async function getApiProducts(): Promise<Product[]> {
+  const response = await fetch(`${API_URL}/products`, {
+    next: {
+      revalidate: 3600, // Cache for 1 hour
     },
   });
 
   if (!response.ok) {
-    throw new Error(`API Error ${response.status}`);
+    throw new Error("Unable to fetch products");
   }
 
-  return response.json();
+  const json: ApiResponse = await response.json();
+
+  return json.data.products.map(normalize);
 }
 
-export async function apiPost(endpoint: string, body: unknown) {
-  const response = await fetch(`${API_URL}${endpoint}`, {
+export async function getApiProductByHandle(
+  handle: string
+): Promise<Product | undefined> {
+  const products = await getApiProducts();
+
+  return products.find(
+    (product) => product.handle === handle
+  );
+}
+
+export async function getApiProductsByCollection(
+  collectionName: Collection
+): Promise<Product[]> {
+  const products = await getApiProducts();
+
+  return products.filter(
+    (product) =>
+      product.collection === collectionName
+  );
+} 
+export async function login(params: { email: string; password: string }) {
+  const { email, password } = params;
+  console.log("Login request:", { email });
+
+  const response = await fetch(`${API_URL}/account/login`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
     },
-    body: JSON.stringify(body),
+    body: JSON.stringify({ email, password }),
   });
 
-  if (!response.ok) {
-    throw new Error("API request failed");
-  }
+  const json = await response.json();
+  console.log("Login response:", json);
 
-  return response.json();
+  return json;
+}
+
+export async function signup(params: {
+  name: string;
+  phone: string;
+  email: string;
+  password: string;
+  password_confirmation: string;
+}) {
+  const { name, phone, email, password, password_confirmation } = params;
+  console.log("Signup request:", { name, phone, email });
+
+  const response = await fetch(`${API_URL}/account/process-register`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ name, phone, email, password, password_confirmation }),
+  });
+
+  const json = await response.json();
+  console.log("Signup response:", json);
+
+  return json;
 }

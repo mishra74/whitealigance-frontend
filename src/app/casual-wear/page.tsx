@@ -3,6 +3,7 @@ import Link from "next/link";
 import PlaceholderImage from "@/components/ui/PlaceholderImage";
 import CasualWearGrid from "@/components/collection/CasualWearGrid";
 import { getApiProductsByCollection } from "@/lib/api";
+export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
   title: "Casual Wear | WHITE ELEGANCE 24",

@@ -16,7 +16,7 @@ import {
   productImageSrcs,
   type Product,
 } from "@/lib/products";
-
+export const dynamic = "force-dynamic";
 export async function generateStaticParams() {
   const products = await getApiProducts();
   return products.map((p: { handle: string }) => ({ handle: p.handle }));

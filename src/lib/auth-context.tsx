@@ -8,57 +8,73 @@ import {
   type ReactNode,
 } from "react";
 
-export interface MockUser {
+/** Shape is whatever the backend's `user` object contains — only name is guaranteed. */
+export interface AuthUser {
   name: string;
-  identifier: string; // phone or email, whatever they logged in/registered with
+  email?: string;
+  phone?: string;
+  [key: string]: unknown;
 }
 
 interface AuthContextValue {
-  user: MockUser | null;
+  user: AuthUser | null;
+  token: string | null;
   hydrated: boolean;
-  /** No real OTP is sent — this is a local-only demo session, not a backend login. */
-  login: (identifier: string) => void;
-  register: (name: string, email: string, phone: string, password: string, password_confirmation: string) => void;
+  /** Called after a real login/signup response from the backend. */
+  setSession: (token: string, user: AuthUser) => void;
+  updateProfile: (patch: Partial<Pick<AuthUser, "name" | "email" | "phone">>) => void;
   logout: () => void;
 }
 
 const AuthContext = createContext<AuthContextValue | null>(null);
 
-const STORAGE_KEY = "we24-auth";
+const TOKEN_KEY = "token";
+const USER_KEY = "user";
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [user, setUser] = useState<MockUser | null>(null);
+  const [user, setUser] = useState<AuthUser | null>(null);
+  const [token, setToken] = useState<string | null>(null);
   const [hydrated, setHydrated] = useState(false);
 
   useEffect(() => {
     try {
-      const raw = window.localStorage.getItem(STORAGE_KEY);
-      if (raw) setUser(JSON.parse(raw));
+      const rawUser = window.localStorage.getItem(USER_KEY);
+      const rawToken = window.localStorage.getItem(TOKEN_KEY);
+      if (rawUser && rawToken) {
+        setUser(JSON.parse(rawUser));
+        setToken(rawToken);
+      }
     } catch {
       // corrupt or inaccessible storage — start signed out
     }
     setHydrated(true);
   }, []);
 
-  useEffect(() => {
-    if (!hydrated) return;
-    if (user) window.localStorage.setItem(STORAGE_KEY, JSON.stringify(user));
-    else window.localStorage.removeItem(STORAGE_KEY);
-  }, [user, hydrated]);
-
-  const login = (identifier: string) => {
-    const name = identifier.includes("@") ? identifier.split("@")[0] : "there";
-    setUser({ name, identifier });
+  const setSession = (newToken: string, newUser: AuthUser) => {
+    setToken(newToken);
+    setUser(newUser);
+    window.localStorage.setItem(TOKEN_KEY, newToken);
+    window.localStorage.setItem(USER_KEY, JSON.stringify(newUser));
   };
 
-  const register = (name: string, email: string, phone: string, password: string, password_confirmation: string) => {
-    setUser({ name, identifier: email || phone });
+  const updateProfile = (patch: Partial<Pick<AuthUser, "name" | "email" | "phone">>) => {
+    setUser((prev) => {
+      if (!prev) return prev;
+      const next = { ...prev, ...patch };
+      window.localStorage.setItem(USER_KEY, JSON.stringify(next));
+      return next;
+    });
   };
 
-  const logout = () => setUser(null);
+  const logout = () => {
+    setUser(null);
+    setToken(null);
+    window.localStorage.removeItem(USER_KEY);
+    window.localStorage.removeItem(TOKEN_KEY);
+  };
 
   return (
-    <AuthContext.Provider value={{ user, hydrated, login, register, logout }}>
+    <AuthContext.Provider value={{ user, token, hydrated, setSession, updateProfile, logout }}>
       {children}
     </AuthContext.Provider>
   );

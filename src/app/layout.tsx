@@ -7,6 +7,7 @@ import SmoothScroll from "@/components/layout/SmoothScroll";
 import { CartProvider } from "@/lib/cart-context";
 import { WishlistProvider } from "@/lib/wishlist-context";
 import { AuthProvider } from "@/lib/auth-context";
+import { AddressProvider } from "@/lib/address-context";
 import "./globals.css";
 
 const fraunces = Fraunces({
@@ -43,15 +44,17 @@ export default function RootLayout({
     >
       <body className="min-h-full flex flex-col max-[1100px]:pb-[var(--mobile-tab-bar-height)]">
         <AuthProvider>
-          <WishlistProvider>
-            <CartProvider>
-              <SmoothScroll />
-              <Header />
-              <main className="flex-1">{children}</main>
-              <Footer />
-              <MobileTabBar />
-            </CartProvider>
-          </WishlistProvider>
+          <AddressProvider>
+            <WishlistProvider>
+              <CartProvider>
+                <SmoothScroll />
+                <Header />
+                <main className="flex-1">{children}</main>
+                <Footer />
+                <MobileTabBar />
+              </CartProvider>
+            </WishlistProvider>
+          </AddressProvider>
         </AuthProvider>
       </body>
     </html>

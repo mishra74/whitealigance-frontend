@@ -11,7 +11,7 @@ type Tab = "login" | "register";
 
 export default function LoginPage() {
   const router = useRouter();
-  const { user, hydrated } = useAuth();
+  const { user, hydrated, setSession } = useAuth();
   const [tab, setTab] = useState<Tab>("login");
 
   const [loginEmail, setLoginEmail] = useState("");
@@ -42,12 +42,7 @@ export default function LoginPage() {
       });
 
       if (res.status) {
-        localStorage.setItem("token", res.token);
-
-        if (res.user) {
-          localStorage.setItem("user", JSON.stringify(res.user));
-        }
-
+        setSession(res.token, res.user ?? { name: loginEmail, email: loginEmail });
         router.push("/account");
       } else {
         setErrors(res.message || "Invalid email or password");
@@ -73,12 +68,7 @@ export default function LoginPage() {
       });
 
       if (res.status) {
-        localStorage.setItem("token", res.token);
-
-        if (res.user) {
-          localStorage.setItem("user", JSON.stringify(res.user));
-        }
-
+        setSession(res.token, res.user ?? { name, email: registerEmail, phone });
         router.push("/account");
       } else if (res.errors) {
         setErrors(JSON.stringify(res.errors));

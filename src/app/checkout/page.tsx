@@ -3,20 +3,172 @@
 import { useState, type FormEvent } from "react";
 import Link from "next/link";
 import { useCart } from "@/lib/cart-context";
+import { useAuth } from "@/lib/auth-context";
+import { useAddresses, type AddressInput } from "@/lib/address-context";
 import { formatINR } from "@/lib/format";
 import buttons from "@/styles/buttons.module.css";
 import PaymentTabs from "@/components/checkout/PaymentTabs";
 import OrderConfirmation from "@/components/checkout/OrderConfirmation";
+import AddressForm from "@/components/account/AddressForm";
 
 const FREE_SHIPPING_THRESHOLD = 5000;
 const FLAT_SHIPPING = 150;
+
+const inputClass =
+  "w-full border-b border-warm-beige bg-transparent px-0.5 py-2.5 text-[0.95rem] outline-none focus:border-soft-gold";
+const labelClass =
+  "mb-2 block text-[0.68rem] uppercase tracking-[0.14em] text-warm-gray";
 
 function generateOrderNumber() {
   return `WE24-${Date.now().toString().slice(-8)}`;
 }
 
+function ShippingAddressSection() {
+  const { user, hydrated } = useAuth();
+  const { addresses, defaultAddress, addAddress } = useAddresses();
+  const [selectedId, setSelectedId] = useState<string | null>(defaultAddress?.id ?? null);
+  const [addingNew, setAddingNew] = useState(false);
+  const [guestAddress, setGuestAddress] = useState<AddressInput>({
+    label: "Home",
+    fullName: "",
+    phone: "",
+    line1: "",
+    line2: "",
+    city: "",
+    state: "",
+    pincode: "",
+  });
+
+  const loggedIn = hydrated && !!user;
+
+  if (!loggedIn) {
+    // Guest checkout — no address book to pick from, just the plain fields.
+    return (
+      <div className="mb-5 grid grid-cols-1 gap-5">
+        <div>
+          <label className={labelClass}>Full Name</label>
+          <input
+            type="text"
+            required
+            value={guestAddress.fullName}
+            onChange={(e) => setGuestAddress((a) => ({ ...a, fullName: e.target.value }))}
+            className={inputClass}
+          />
+        </div>
+        <div>
+          <label className={labelClass}>Address Line 1</label>
+          <input
+            type="text"
+            required
+            value={guestAddress.line1}
+            onChange={(e) => setGuestAddress((a) => ({ ...a, line1: e.target.value }))}
+            className={inputClass}
+          />
+        </div>
+        <div>
+          <label className={labelClass}>Address Line 2 (optional)</label>
+          <input
+            type="text"
+            value={guestAddress.line2}
+            onChange={(e) => setGuestAddress((a) => ({ ...a, line2: e.target.value }))}
+            className={inputClass}
+          />
+        </div>
+        <div className="grid grid-cols-1 gap-5 sm:grid-cols-3">
+          <div>
+            <label className={labelClass}>City</label>
+            <input
+              type="text"
+              required
+              value={guestAddress.city}
+              onChange={(e) => setGuestAddress((a) => ({ ...a, city: e.target.value }))}
+              className={inputClass}
+            />
+          </div>
+          <div>
+            <label className={labelClass}>State</label>
+            <input
+              type="text"
+              required
+              value={guestAddress.state}
+              onChange={(e) => setGuestAddress((a) => ({ ...a, state: e.target.value }))}
+              className={inputClass}
+            />
+          </div>
+          <div>
+            <label className={labelClass}>Pincode</label>
+            <input
+              type="text"
+              required
+              inputMode="numeric"
+              value={guestAddress.pincode}
+              onChange={(e) => setGuestAddress((a) => ({ ...a, pincode: e.target.value }))}
+              className={inputClass}
+            />
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (addingNew || addresses.length === 0) {
+    return (
+      <AddressForm
+        asForm={false}
+        submitLabel="Use This Address"
+        onSubmit={(input) => {
+          const saved = addAddress(input, addresses.length === 0);
+          setSelectedId(saved.id);
+          setAddingNew(false);
+        }}
+        onCancel={() => setAddingNew(false)}
+      />
+    );
+  }
+
+  return (
+    <div>
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+        {addresses.map((address) => (
+          <button
+            key={address.id}
+            type="button"
+            onClick={() => setSelectedId(address.id)}
+            className={`border p-5 text-left text-[0.85rem] ${
+              selectedId === address.id ? "border-charcoal" : "border-warm-beige"
+            }`}
+          >
+            <div className="mb-2 flex items-center gap-2">
+              <span className="border border-warm-beige px-2 py-0.5 text-[0.6rem] uppercase tracking-[0.1em] text-muted-bronze">
+                {address.label}
+              </span>
+              {address.isDefault && (
+                <span className="text-[0.6rem] uppercase tracking-[0.1em] text-soft-gold">Default</span>
+              )}
+            </div>
+            <div className="font-semibold text-charcoal">{address.fullName}</div>
+            <div className="text-warm-gray">{address.phone}</div>
+            <div className="mt-1 text-warm-gray">
+              {address.line1}
+              {address.line2 ? `, ${address.line2}` : ""}, {address.city}, {address.state} — {address.pincode}
+            </div>
+          </button>
+        ))}
+      </div>
+      <button
+        type="button"
+        onClick={() => setAddingNew(true)}
+        className="mt-4 text-[0.72rem] uppercase tracking-[0.08em] text-soft-gold underline"
+      >
+        + Add New Address
+      </button>
+    </div>
+  );
+}
+
 export default function CheckoutPage() {
   const { items, subtotal, clear } = useCart();
+  const { user, hydrated } = useAuth();
   const [orderNumber, setOrderNumber] = useState<string | null>(null);
 
   function handlePlaceOrder(e: FormEvent<HTMLFormElement>) {
@@ -68,10 +220,16 @@ export default function CheckoutPage() {
       <form onSubmit={handlePlaceOrder} className="grid grid-cols-1 gap-16 pt-6 pb-20 lg:grid-cols-[1fr_380px]">
         <div>
           <div className="mb-6 text-[0.82rem] text-warm-gray">
-            Checking out as guest —{" "}
-            <Link href="/login" className="text-soft-gold underline">
-              log in instead
-            </Link>
+            {hydrated && user ? (
+              `Checking out as ${user.name}`
+            ) : (
+              <>
+                Checking out as guest —{" "}
+                <Link href="/login" className="text-soft-gold underline">
+                  log in instead
+                </Link>
+              </>
+            )}
           </div>
 
           <div className="mb-11">
@@ -89,6 +247,7 @@ export default function CheckoutPage() {
                 <input
                   type="email"
                   required
+                  defaultValue={user?.email}
                   className="w-full border-b border-warm-beige bg-transparent px-0.5 py-2.5 text-[0.95rem] outline-none focus:border-soft-gold"
                 />
               </div>
@@ -99,6 +258,7 @@ export default function CheckoutPage() {
                 <input
                   type="tel"
                   required
+                  defaultValue={user?.phone}
                   className="w-full border-b border-warm-beige bg-transparent px-0.5 py-2.5 text-[0.95rem] outline-none focus:border-soft-gold"
                 />
               </div>
@@ -112,48 +272,7 @@ export default function CheckoutPage() {
               </span>
               Shipping Address
             </h3>
-            <div className="mb-5">
-              <label className="mb-2 block text-[0.68rem] uppercase tracking-[0.14em] text-warm-gray">
-                Full Name
-              </label>
-              <input
-                type="text"
-                required
-                className="w-full border-b border-warm-beige bg-transparent px-0.5 py-2.5 text-[0.95rem] outline-none focus:border-soft-gold"
-              />
-            </div>
-            <div className="mb-5">
-              <label className="mb-2 block text-[0.68rem] uppercase tracking-[0.14em] text-warm-gray">
-                Address
-              </label>
-              <input
-                type="text"
-                required
-                className="w-full border-b border-warm-beige bg-transparent px-0.5 py-2.5 text-[0.95rem] outline-none focus:border-soft-gold"
-              />
-            </div>
-            <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
-              <div>
-                <label className="mb-2 block text-[0.68rem] uppercase tracking-[0.14em] text-warm-gray">
-                  City
-                </label>
-                <input
-                  type="text"
-                  required
-                  className="w-full border-b border-warm-beige bg-transparent px-0.5 py-2.5 text-[0.95rem] outline-none focus:border-soft-gold"
-                />
-              </div>
-              <div>
-                <label className="mb-2 block text-[0.68rem] uppercase tracking-[0.14em] text-warm-gray">
-                  Pincode
-                </label>
-                <input
-                  type="text"
-                  required
-                  className="w-full border-b border-warm-beige bg-transparent px-0.5 py-2.5 text-[0.95rem] outline-none focus:border-soft-gold"
-                />
-              </div>
-            </div>
+            <ShippingAddressSection />
           </div>
 
           <div>

@@ -19,6 +19,7 @@ interface ApiProduct {
   description: string | null;
   short_description: string |null;
   category_id: number;
+  collection: Collection | null;
   sku: string;
   price: number | string;
   qty: number | null;
@@ -55,12 +56,6 @@ function imageUrl(image?: string): string {
   return `${baseUrl()}/uploads/product/large/${image}`;
 }
 
-function collection(category: number): Collection {
-  return category === 24
-    ? "party-wear"
-    : "casual-wear";
-}
-
 function normalize(product: ApiProduct): Product {
   const images: ProductImage[] =
   product.product_images?.map((img) => ({
@@ -79,7 +74,9 @@ function normalize(product: ApiProduct): Product {
       stripHtml(product.description) ||
       stripHtml(product.short_description),
 
-    collection: collection(product.category_id),
+    // "casual-wear" is a safe default for any legacy product that predates
+    // the real admin-controlled collection field — never guess "party-wear".
+    collection: product.collection ?? "casual-wear",
 
     hasPhoto: images.length > 0,
 

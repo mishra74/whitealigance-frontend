@@ -6,6 +6,7 @@ import PlaceholderImage from "@/components/ui/PlaceholderImage";
 import buttons from "@/styles/buttons.module.css";
 import { useAuth } from "@/lib/auth-context";
 import { signup, login } from "@/lib/api";
+import GoogleSignInButton from "@/components/auth/GoogleSignInButton";
 
 type Tab = "login" | "register";
 
@@ -13,6 +14,7 @@ export default function LoginPage() {
   const router = useRouter();
   const { user, hydrated, setSession } = useAuth();
   const [tab, setTab] = useState<Tab>("login");
+  const googleClientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID;
 
   const [loginEmail, setLoginEmail] = useState("");
   const [loginPassword, setLoginPassword] = useState("");
@@ -100,6 +102,24 @@ export default function LoginPage() {
 
       <div className="flex items-center justify-center p-14">
         <div className="w-full max-w-[360px]">
+          {googleClientId && (
+            <>
+              <GoogleSignInButton
+                onSuccess={(token, user) => {
+                  setSession(token, user);
+                  router.push("/account");
+                }}
+                onError={(message) => setErrors(message)}
+              />
+
+              <div className="mb-7 flex items-center gap-4 text-[0.68rem] uppercase tracking-[0.14em] text-warm-gray">
+                <span className="h-px flex-1 bg-cream" />
+                or
+                <span className="h-px flex-1 bg-cream" />
+              </div>
+            </>
+          )}
+
           <div className="mb-8 flex border-b border-cream">
             <button
               type="button"
@@ -244,8 +264,8 @@ export default function LoginPage() {
           )}
 
           <p className="mt-6 text-[0.72rem] text-muted-bronze">
-            Demo account only — stored in this browser, not on a live
-            backend yet.
+            Checkout is running in sandbox mode until a live payment gateway
+            is connected — your account itself is real.
           </p>
         </div>
       </div>

@@ -6,7 +6,7 @@ import ProductGallery from "@/components/product/ProductGallery";
 import AddToCartControls from "@/components/product/AddToCartControls";
 import DeliveryCheck from "@/components/product/DeliveryCheck";
 import Accordion from "@/components/product/Accordion";
-import { getApiProductByHandle, getApiProducts } from "@/lib/api";
+import { getApiProducts, getApiProductWithSimilar } from "@/lib/api";
 import {
   collectionHref,
   collectionLabel,
@@ -28,11 +28,11 @@ export async function generateMetadata({
   params: Promise<{ handle: string }>;
 }): Promise<Metadata> {
   const { handle } = await params;
-  const product = await getApiProductByHandle(handle);
-  if (!product) return {};
+  const result = await getApiProductWithSimilar(handle);
+  if (!result) return {};
   return {
-    title: `${product.title} | WHITE ELEGANCE 24`,
-    description: product.description,
+    title: `${result.product.title} | WHITE ELEGANCE 24`,
+    description: result.product.description,
   };
 }
 
@@ -42,14 +42,11 @@ export default async function ProductPage({
   params: Promise<{ handle: string }>;
 }) {
   const { handle } = await params;
-  const product = await getApiProductByHandle(handle);
-  if (!product) notFound();
+  const result = await getApiProductWithSimilar(handle);
+  if (!result) notFound();
+  const { product, similar } = result;
 
   const variant = product.variants[0];
-  const similar = (await getApiProducts()).filter(
-    (item: { id: string; collection: string }) =>
-      item.id !== product.id && item.collection === product.collection
-  ).slice(0, 4);
 
   return (
     <div className="mx-auto max-w-[1320px] px-14 pb-20 max-[1100px]:px-8">

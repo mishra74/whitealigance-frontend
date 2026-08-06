@@ -1,10 +1,11 @@
 "use client";
 
-import { useState, type FormEvent } from "react";
+import { useEffect, useState, type FormEvent } from "react";
 import Link from "next/link";
 import { useCart } from "@/lib/cart-context";
 import { useAuth } from "@/lib/auth-context";
 import { useAddresses, type AddressInput } from "@/lib/address-context";
+import { apiPlaceOrder } from "@/lib/api";
 import { formatINR } from "@/lib/format";
 import buttons from "@/styles/buttons.module.css";
 import PaymentTabs from "@/components/checkout/PaymentTabs";
@@ -12,22 +13,39 @@ import OrderConfirmation from "@/components/checkout/OrderConfirmation";
 import AddressForm from "@/components/account/AddressForm";
 
 const FREE_SHIPPING_THRESHOLD = 5000;
-const FLAT_SHIPPING = 150;
+// Matches the real ShippingCharge row for India in the database (₹50) — the
+// order endpoint is the source of truth; this is only a pre-submit estimate.
+const FLAT_SHIPPING = 50;
 
 const inputClass =
   "w-full border-b border-warm-beige bg-transparent px-0.5 py-2.5 text-[0.95rem] outline-none focus:border-soft-gold";
 const labelClass =
   "mb-2 block text-[0.68rem] uppercase tracking-[0.14em] text-warm-gray";
 
-function generateOrderNumber() {
-  return `WE24-${Date.now().toString().slice(-8)}`;
-}
+type ShippingSelection =
+  | { type: "saved"; addressId: string }
+  | { type: "inline"; address: AddressInput };
 
-function ShippingAddressSection() {
+function ShippingAddressSection({
+  onChange,
+}: {
+  onChange: (selection: ShippingSelection | null) => void;
+}) {
   const { user, hydrated } = useAuth();
   const { addresses, defaultAddress, addAddress } = useAddresses();
-  const [selectedId, setSelectedId] = useState<string | null>(defaultAddress?.id ?? null);
+  const [selectedId, setSelectedId] = useState<string | null>(null);
   const [addingNew, setAddingNew] = useState(false);
+  const [savingAddress, setSavingAddress] = useState(false);
+  const [addressError, setAddressError] = useState<string | null>(null);
+
+  // Addresses load asynchronously from the API, so defaultAddress isn't
+  // available on first render — select it once it arrives.
+  useEffect(() => {
+    if (selectedId || !defaultAddress) return;
+    setSelectedId(defaultAddress.id);
+    onChange({ type: "saved", addressId: defaultAddress.id });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [defaultAddress]);
   const [guestAddress, setGuestAddress] = useState<AddressInput>({
     label: "Home",
     fullName: "",
@@ -41,6 +59,17 @@ function ShippingAddressSection() {
 
   const loggedIn = hydrated && !!user;
 
+  function selectAddress(id: string) {
+    setSelectedId(id);
+    onChange({ type: "saved", addressId: id });
+  }
+
+  function updateGuestAddress(patch: Partial<AddressInput>) {
+    const next = { ...guestAddress, ...patch };
+    setGuestAddress(next);
+    onChange({ type: "inline", address: next });
+  }
+
   if (!loggedIn) {
     // Guest checkout — no address book to pick from, just the plain fields.
     return (
@@ -51,7 +80,7 @@ function ShippingAddressSection() {
             type="text"
             required
             value={guestAddress.fullName}
-            onChange={(e) => setGuestAddress((a) => ({ ...a, fullName: e.target.value }))}
+            onChange={(e) => updateGuestAddress({ fullName: e.target.value })}
             className={inputClass}
           />
         </div>
@@ -61,7 +90,7 @@ function ShippingAddressSection() {
             type="text"
             required
             value={guestAddress.line1}
-            onChange={(e) => setGuestAddress((a) => ({ ...a, line1: e.target.value }))}
+            onChange={(e) => updateGuestAddress({ line1: e.target.value })}
             className={inputClass}
           />
         </div>
@@ -70,7 +99,7 @@ function ShippingAddressSection() {
           <input
             type="text"
             value={guestAddress.line2}
-            onChange={(e) => setGuestAddress((a) => ({ ...a, line2: e.target.value }))}
+            onChange={(e) => updateGuestAddress({ line2: e.target.value })}
             className={inputClass}
           />
         </div>
@@ -81,7 +110,7 @@ function ShippingAddressSection() {
               type="text"
               required
               value={guestAddress.city}
-              onChange={(e) => setGuestAddress((a) => ({ ...a, city: e.target.value }))}
+              onChange={(e) => updateGuestAddress({ city: e.target.value })}
               className={inputClass}
             />
           </div>
@@ -91,7 +120,7 @@ function ShippingAddressSection() {
               type="text"
               required
               value={guestAddress.state}
-              onChange={(e) => setGuestAddress((a) => ({ ...a, state: e.target.value }))}
+              onChange={(e) => updateGuestAddress({ state: e.target.value })}
               className={inputClass}
             />
           </div>
@@ -102,7 +131,7 @@ function ShippingAddressSection() {
               required
               inputMode="numeric"
               value={guestAddress.pincode}
-              onChange={(e) => setGuestAddress((a) => ({ ...a, pincode: e.target.value }))}
+              onChange={(e) => updateGuestAddress({ pincode: e.target.value })}
               className={inputClass}
             />
           </div>
@@ -113,16 +142,28 @@ function ShippingAddressSection() {
 
   if (addingNew || addresses.length === 0) {
     return (
-      <AddressForm
-        asForm={false}
-        submitLabel="Use This Address"
-        onSubmit={(input) => {
-          const saved = addAddress(input, addresses.length === 0);
-          setSelectedId(saved.id);
-          setAddingNew(false);
-        }}
-        onCancel={() => setAddingNew(false)}
-      />
+      <>
+        <AddressForm
+          asForm={false}
+          disabled={savingAddress}
+          submitLabel={savingAddress ? "Saving…" : "Use This Address"}
+          onSubmit={async (input) => {
+            setAddressError(null);
+            setSavingAddress(true);
+            try {
+              const saved = await addAddress(input, addresses.length === 0);
+              selectAddress(saved.id);
+              setAddingNew(false);
+            } catch (e) {
+              setAddressError(e instanceof Error ? e.message : "Unable to save address.");
+            } finally {
+              setSavingAddress(false);
+            }
+          }}
+          onCancel={() => setAddingNew(false)}
+        />
+        {addressError && <p className="mt-3 text-[0.8rem] text-red-500">{addressError}</p>}
+      </>
     );
   }
 
@@ -133,7 +174,7 @@ function ShippingAddressSection() {
           <button
             key={address.id}
             type="button"
-            onClick={() => setSelectedId(address.id)}
+            onClick={() => selectAddress(address.id)}
             className={`border p-5 text-left text-[0.85rem] ${
               selectedId === address.id ? "border-charcoal" : "border-warm-beige"
             }`}
@@ -167,21 +208,67 @@ function ShippingAddressSection() {
 }
 
 export default function CheckoutPage() {
-  const { items, subtotal, clear } = useCart();
+  const { items, subtotal, couponCode, couponDiscount, clear } = useCart();
   const { user, hydrated } = useAuth();
-  const [orderNumber, setOrderNumber] = useState<string | null>(null);
 
-  function handlePlaceOrder(e: FormEvent<HTMLFormElement>) {
+  const [contactEmail, setContactEmail] = useState("");
+  const [contactPhone, setContactPhone] = useState("");
+  const [shipping, setShipping] = useState<ShippingSelection | null>(null);
+
+  // user loads asynchronously after hydration, so the useState initializers
+  // above can't see it yet — sync once it becomes available.
+  useEffect(() => {
+    if (!hydrated || !user) return;
+    setContactEmail((prev) => prev || user.email || "");
+    setContactPhone((prev) => prev || user.phone || "");
+  }, [hydrated, user]);
+
+  const [submitting, setSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
+  const [confirmedOrder, setConfirmedOrder] = useState<{
+    orderNumber: string;
+    grandTotal: number;
+  } | null>(null);
+
+  async function handlePlaceOrder(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
-    const num = generateOrderNumber();
-    clear();
-    setOrderNumber(num);
+
+    if (!shipping) {
+      setSubmitError("Please add a shipping address before placing your order.");
+      return;
+    }
+
+    setSubmitting(true);
+    setSubmitError(null);
+
+    const { ok, json } = await apiPlaceOrder({
+      contact_email: contactEmail,
+      contact_phone: contactPhone,
+      ...(shipping.type === "saved"
+        ? { address_id: shipping.addressId }
+        : { shipping: shipping.address }),
+      items: items.map((line) => ({ sku: line.sku, qty: line.qty })),
+      coupon_code: couponCode ?? undefined,
+    });
+
+    setSubmitting(false);
+
+    if (ok && json.status) {
+      clear();
+      setConfirmedOrder({ orderNumber: json.order_number, grandTotal: json.grand_total });
+    } else {
+      setSubmitError(
+        json.message ||
+          (json.errors ? Object.values(json.errors).flat().join(" ") : null) ||
+          "Something went wrong placing your order. Please try again."
+      );
+    }
   }
 
-  if (orderNumber) {
+  if (confirmedOrder) {
     return (
       <div className="mx-auto max-w-[1320px] px-14 max-[1100px]:px-8">
-        <OrderConfirmation orderNumber={orderNumber} />
+        <OrderConfirmation orderNumber={confirmedOrder.orderNumber} />
       </div>
     );
   }
@@ -204,8 +291,9 @@ export default function CheckoutPage() {
     );
   }
 
-  const shipping = subtotal >= FREE_SHIPPING_THRESHOLD ? 0 : FLAT_SHIPPING;
-  const total = subtotal + shipping;
+  const afterDiscount = Math.max(0, subtotal - couponDiscount);
+  const shippingCost = afterDiscount >= FREE_SHIPPING_THRESHOLD ? 0 : FLAT_SHIPPING;
+  const total = afterDiscount + shippingCost;
 
   return (
     <div className="mx-auto max-w-[1320px] px-14 max-[1100px]:px-8">
@@ -247,7 +335,8 @@ export default function CheckoutPage() {
                 <input
                   type="email"
                   required
-                  defaultValue={user?.email}
+                  value={contactEmail}
+                  onChange={(e) => setContactEmail(e.target.value)}
                   className="w-full border-b border-warm-beige bg-transparent px-0.5 py-2.5 text-[0.95rem] outline-none focus:border-soft-gold"
                 />
               </div>
@@ -258,7 +347,8 @@ export default function CheckoutPage() {
                 <input
                   type="tel"
                   required
-                  defaultValue={user?.phone}
+                  value={contactPhone}
+                  onChange={(e) => setContactPhone(e.target.value)}
                   className="w-full border-b border-warm-beige bg-transparent px-0.5 py-2.5 text-[0.95rem] outline-none focus:border-soft-gold"
                 />
               </div>
@@ -272,7 +362,7 @@ export default function CheckoutPage() {
               </span>
               Shipping Address
             </h3>
-            <ShippingAddressSection />
+            <ShippingAddressSection onChange={setShipping} />
           </div>
 
           <div>
@@ -305,19 +395,31 @@ export default function CheckoutPage() {
             <span>Subtotal</span>
             <span>{formatINR(subtotal)}</span>
           </div>
+          {couponDiscount > 0 && (
+            <div className="mb-3.5 flex justify-between text-[0.9rem] text-warm-gray">
+              <span>Discount ({couponCode})</span>
+              <span>−{formatINR(couponDiscount)}</span>
+            </div>
+          )}
           <div className="mb-3.5 flex justify-between text-[0.9rem] text-warm-gray">
             <span>Shipping</span>
-            <span>{shipping === 0 ? "Free" : formatINR(shipping)}</span>
+            <span>{shippingCost === 0 ? "Free" : formatINR(shippingCost)}</span>
           </div>
           <div className="mt-1.5 flex justify-between border-t border-warm-beige pt-4 text-[1.05rem] font-semibold text-charcoal">
             <span>Total</span>
             <span>{formatINR(total)}</span>
           </div>
+
+          {submitError && (
+            <p className="mt-4 text-[0.8rem] text-red-500">{submitError}</p>
+          )}
+
           <button
             type="submit"
-            className={`${buttons.btn} ${buttons.primary} ${buttons.block} mt-6`}
+            disabled={submitting}
+            className={`${buttons.btn} ${buttons.primary} ${buttons.block} mt-6 disabled:opacity-60`}
           >
-            Place Order
+            {submitting ? "Placing Order…" : "Place Order"}
           </button>
         </div>
       </form>

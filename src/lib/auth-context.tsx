@@ -7,6 +7,7 @@ import {
   useState,
   type ReactNode,
 } from "react";
+import { apiLogout, apiUpdateProfile } from "./api";
 
 /** Shape is whatever the backend's `user` object contains — only name is guaranteed. */
 export interface AuthUser {
@@ -64,9 +65,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       window.localStorage.setItem(USER_KEY, JSON.stringify(next));
       return next;
     });
+
+    if (patch.name && patch.email && patch.phone) {
+      apiUpdateProfile({ name: patch.name, email: patch.email, phone: patch.phone });
+    }
   };
 
   const logout = () => {
+    // Best-effort: revoke the token server-side, but always clear the local
+    // session regardless of whether the network call succeeds.
+    apiLogout().catch(() => {});
     setUser(null);
     setToken(null);
     window.localStorage.removeItem(USER_KEY);

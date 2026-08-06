@@ -14,10 +14,15 @@ export default function SearchPage() {
   const [query, setQuery] = useState("");
   const [activeChip, setActiveChip] = useState<Chip | null>(null);
   const [products, setProducts] = useState<Product[]>([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     async function load() {
-      setProducts(await getApiProducts());
+      try {
+        setProducts(await getApiProducts());
+      } finally {
+        setLoading(false);
+      }
     }
 
     load();
@@ -36,7 +41,7 @@ export default function SearchPage() {
       const haystack = `${p.title} ${p.description} ${p.tags.join(" ")}`.toLowerCase();
       return haystack.includes(q);
     });
-  }, [q, activeChip]);
+  }, [q, activeChip, products]);
 
   const matchedCollections = useMemo(() => {
     if (!q) return [];
@@ -86,7 +91,9 @@ export default function SearchPage() {
       </div>
 
       <div className="mx-auto max-w-[1320px] pt-9 pb-24">
-        {!hasSearched ? (
+        {loading ? (
+          <p className="text-center text-[0.9rem] text-warm-gray">Loading…</p>
+        ) : !hasSearched ? (
           <p className="text-center text-[0.9rem] text-warm-gray">
             Start typing, or pick a filter above, to search the collection.
           </p>

@@ -18,6 +18,7 @@ interface AddressFormProps {
   submitLabel?: string;
   /** Set false when nesting inside another <form> (e.g. Checkout) — nested forms are invalid HTML. */
   asForm?: boolean;
+  disabled?: boolean;
 }
 
 export default function AddressForm({
@@ -26,6 +27,7 @@ export default function AddressForm({
   onCancel,
   submitLabel = "Save Address",
   asForm = true,
+  disabled = false,
 }: AddressFormProps) {
   const [label, setLabel] = useState<AddressLabel>(initial?.label ?? "Home");
   const [fullName, setFullName] = useState(initial?.fullName ?? "");
@@ -160,11 +162,12 @@ export default function AddressForm({
         <button
           type={asForm ? "submit" : "button"}
           onClick={asForm ? undefined : () => handleSubmit()}
-          className={`${buttons.btn} ${buttons.primary}`}
+          disabled={disabled}
+          className={`${buttons.btn} ${buttons.primary} disabled:opacity-60`}
         >
           {submitLabel}
         </button>
-        <button type="button" onClick={onCancel} className={`${buttons.btn} ${buttons.secondary}`}>
+        <button type="button" onClick={onCancel} disabled={disabled} className={`${buttons.btn} ${buttons.secondary}`}>
           Cancel
         </button>
       </div>

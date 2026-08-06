@@ -2,23 +2,42 @@
 
 import { useState, type FormEvent } from "react";
 import buttons from "@/styles/buttons.module.css";
-
-const CONTACT_EMAIL = "amruta.nilatkar.47@gmail.com";
+import { apiSendContact } from "@/lib/api";
 
 export default function ContactForm() {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [message, setMessage] = useState("");
+  const [sending, setSending] = useState(false);
   const [sent, setSent] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  function handleSubmit(e: FormEvent<HTMLFormElement>) {
+  async function handleSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
-    const subject = `Website inquiry from ${name}`;
-    const body = `${message}\n\n— ${name} (${email})`;
-    window.location.href = `mailto:${CONTACT_EMAIL}?subject=${encodeURIComponent(
-      subject
-    )}&body=${encodeURIComponent(body)}`;
-    setSent(true);
+    setSending(true);
+    setError(null);
+
+    const { ok, json } = await apiSendContact({
+      name,
+      email,
+      subject: `Website inquiry from ${name}`,
+      message,
+    });
+
+    setSending(false);
+
+    if (ok && json.status) {
+      setSent(true);
+      setName("");
+      setEmail("");
+      setMessage("");
+    } else {
+      setError(
+        json.errors
+          ? Object.values(json.errors).flat().join(" ")
+          : "Something went wrong sending your message. Please try again."
+      );
+    }
   }
 
   return (
@@ -61,16 +80,17 @@ export default function ContactForm() {
       </div>
       <button
         type="submit"
-        className={`${buttons.btn} ${buttons.primary} ${buttons.block}`}
+        disabled={sending}
+        className={`${buttons.btn} ${buttons.primary} ${buttons.block} disabled:opacity-60`}
       >
-        Send Message
+        {sending ? "Sending…" : "Send Message"}
       </button>
       {sent && (
         <p className="mt-3 text-[0.8rem] text-warm-gray">
-          Opening your email app with this message ready to send to{" "}
-          {CONTACT_EMAIL}.
+          Thanks for reaching out — we&apos;ll get back to you soon.
         </p>
       )}
+      {error && <p className="mt-3 text-[0.8rem] text-red-500">{error}</p>}
     </form>
   );
 }

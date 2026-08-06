@@ -136,6 +136,52 @@ export async function getApiProductByHandle(
   );
 }
 
+/**
+ * Fetches one product by slug plus its similar-products list in a single
+ * request, instead of fetching the entire catalog (getApiProductByHandle)
+ * and refiltering it client-side for "similar products".
+ */
+export async function getApiProductWithSimilar(
+  handle: string
+): Promise<{ product: Product; similar: Product[] } | undefined> {
+  const response = await fetch(`${API_URL}/products/${handle}`, {
+    next: { revalidate: 3600 },
+  });
+
+  if (response.status === 404) return undefined;
+  if (!response.ok) throw new Error("Unable to fetch product");
+
+  const json: { data: { product: ApiProduct; similar: ApiProduct[] } } =
+    await response.json();
+
+  return {
+    product: normalize(json.data.product),
+    similar: json.data.similar.map(normalize),
+  };
+}
+
+export interface ApiCategory {
+  id: number;
+  name: string;
+  slug: string;
+  image: string | null;
+  showHome: "Yes" | "No";
+}
+
+export async function getApiCategories(): Promise<ApiCategory[]> {
+  const response = await fetch(`${API_URL}/categories`, {
+    next: { revalidate: 3600 },
+  });
+
+  if (!response.ok) return [];
+
+  const json: { data: { categories: ApiCategory[] } } = await response.json();
+  return json.data.categories.map((c) => ({
+    ...c,
+    image: c.image ? `${baseUrl()}/uploads/category/${c.image}` : null,
+  }));
+}
+
 export async function getApiProductsByCollection(
   collectionName: Collection
 ): Promise<Product[]> {
@@ -186,4 +232,183 @@ export async function signup(params: {
   console.log("Signup response:", json);
 
   return json;
+}
+
+export async function googleLogin(idToken: string) {
+  const response = await fetch(`${API_URL}/account/google-login`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ id_token: idToken }),
+  });
+
+  return response.json();
+}
+
+/* ===========================
+   Authenticated requests
+=========================== */
+
+function getToken(): string | null {
+  if (typeof window === "undefined") return null;
+  return window.localStorage.getItem("token");
+}
+
+async function authFetch(path: string, options: RequestInit = {}) {
+  const token = getToken();
+  const headers: Record<string, string> = {
+    "Content-Type": "application/json",
+    ...((options.headers as Record<string, string> | undefined) ?? {}),
+  };
+  if (token) headers["Authorization"] = `Bearer ${token}`;
+
+  const response = await fetch(`${API_URL}${path}`, { ...options, headers });
+  const json = await response.json().catch(() => ({}));
+  return { ok: response.ok, status: response.status, json };
+}
+
+export async function apiLogout() {
+  return authFetch("/account/logout", { method: "POST" });
+}
+
+export async function apiUpdateProfile(data: {
+  name: string;
+  email: string;
+  phone: string;
+}) {
+  return authFetch("/account/update-profile", {
+    method: "POST",
+    body: JSON.stringify(data),
+  });
+}
+
+export async function apiChangePassword(data: {
+  old_password: string;
+  new_password: string;
+  confirm_password: string;
+}) {
+  return authFetch("/account/change-password", {
+    method: "POST",
+    body: JSON.stringify(data),
+  });
+}
+
+/* ===========================
+   Addresses
+=========================== */
+
+export interface ApiAddress {
+  id: string;
+  label: "Home" | "Work" | "Other";
+  fullName: string;
+  phone: string;
+  line1: string;
+  line2?: string;
+  city: string;
+  state: string;
+  pincode: string;
+  isDefault: boolean;
+}
+
+export async function apiGetAddresses() {
+  return authFetch("/addresses");
+}
+
+export async function apiAddAddress(
+  input: Omit<ApiAddress, "id" | "isDefault">,
+  makeDefault = false
+) {
+  return authFetch("/addresses", {
+    method: "POST",
+    body: JSON.stringify({ ...input, make_default: makeDefault }),
+  });
+}
+
+export async function apiUpdateAddress(
+  id: string,
+  input: Omit<ApiAddress, "id" | "isDefault">
+) {
+  return authFetch(`/addresses/${id}`, {
+    method: "PUT",
+    body: JSON.stringify(input),
+  });
+}
+
+export async function apiDeleteAddress(id: string) {
+  return authFetch(`/addresses/${id}`, { method: "DELETE" });
+}
+
+export async function apiSetDefaultAddress(id: string) {
+  return authFetch(`/addresses/${id}/default`, { method: "POST" });
+}
+
+/* ===========================
+   Wishlist
+=========================== */
+
+export async function apiGetWishlist() {
+  return authFetch("/wishlist");
+}
+
+export async function apiToggleWishlist(handle: string) {
+  return authFetch("/wishlist", {
+    method: "POST",
+    body: JSON.stringify({ handle }),
+  });
+}
+
+export async function apiRemoveWishlist(handle: string) {
+  return authFetch(`/wishlist/${handle}`, { method: "DELETE" });
+}
+
+/* ===========================
+   Checkout
+=========================== */
+
+export interface PlaceOrderPayload {
+  contact_email: string;
+  contact_phone: string;
+  address_id?: string;
+  shipping?: {
+    fullName: string;
+    line1: string;
+    line2?: string;
+    city: string;
+    state: string;
+    pincode: string;
+  };
+  items: { sku: string; qty: number }[];
+  coupon_code?: string;
+  notes?: string;
+}
+
+export async function apiPlaceOrder(payload: PlaceOrderPayload) {
+  return authFetch("/orders", {
+    method: "POST",
+    body: JSON.stringify(payload),
+  });
+}
+
+export async function apiApplyCoupon(code: string, subtotal: number) {
+  return authFetch("/coupons/apply", {
+    method: "POST",
+    body: JSON.stringify({ code, subtotal }),
+  });
+}
+
+/* ===========================
+   Contact
+=========================== */
+
+export async function apiSendContact(data: {
+  name: string;
+  email: string;
+  subject: string;
+  message: string;
+}) {
+  return authFetch("/contact", {
+    method: "POST",
+    body: JSON.stringify(data),
+  });
 }

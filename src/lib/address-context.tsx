@@ -7,6 +7,14 @@ import {
   useState,
   type ReactNode,
 } from "react";
+import { useAuth } from "./auth-context";
+import {
+  apiGetAddresses,
+  apiAddAddress,
+  apiUpdateAddress,
+  apiDeleteAddress,
+  apiSetDefaultAddress,
+} from "./api";
 
 export type AddressLabel = "Home" | "Work" | "Other";
 
@@ -28,56 +36,69 @@ export type AddressInput = Omit<Address, "id" | "isDefault">;
 interface AddressContextValue {
   addresses: Address[];
   defaultAddress: Address | undefined;
-  addAddress: (input: AddressInput, makeDefault?: boolean) => Address;
-  updateAddress: (id: string, patch: Partial<AddressInput>) => void;
+  hydrated: boolean;
+  addAddress: (input: AddressInput, makeDefault?: boolean) => Promise<Address>;
+  updateAddress: (id: string, patch: AddressInput) => void;
   removeAddress: (id: string) => void;
   setDefaultAddress: (id: string) => void;
 }
 
 const AddressContext = createContext<AddressContextValue | null>(null);
 
-const STORAGE_KEY = "we24-addresses";
-
-function generateId() {
-  return `addr_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 8)}`;
-}
-
 export function AddressProvider({ children }: { children: ReactNode }) {
+  const { user, hydrated: authHydrated } = useAuth();
   const [addresses, setAddresses] = useState<Address[]>([]);
   const [hydrated, setHydrated] = useState(false);
 
+  // Addresses only exist for real accounts — nothing to load for guests.
   useEffect(() => {
-    try {
-      const raw = window.localStorage.getItem(STORAGE_KEY);
-      if (raw) setAddresses(JSON.parse(raw));
-    } catch {
-      // corrupt or inaccessible storage — start with no saved addresses
+    if (!authHydrated) return;
+    if (!user) {
+      setAddresses([]);
+      setHydrated(true);
+      return;
     }
-    setHydrated(true);
-  }, []);
-
-  useEffect(() => {
-    if (!hydrated) return;
-    window.localStorage.setItem(STORAGE_KEY, JSON.stringify(addresses));
-  }, [addresses, hydrated]);
-
-  const addAddress = (input: AddressInput, makeDefault?: boolean) => {
-    const address: Address = { ...input, id: generateId(), isDefault: false };
-    setAddresses((prev) => {
-      const shouldBeDefault = makeDefault || prev.length === 0;
-      address.isDefault = shouldBeDefault;
-      return shouldBeDefault
-        ? [...prev.map((a) => ({ ...a, isDefault: false })), address]
-        : [...prev, address];
+    apiGetAddresses().then(({ ok, json }) => {
+      if (ok && json.status) setAddresses(json.addresses);
+      setHydrated(true);
     });
-    return address;
+  }, [authHydrated, user]);
+
+  const addAddress = async (input: AddressInput, makeDefault?: boolean): Promise<Address> => {
+    // Awaits the real server response (rather than returning an optimistic
+    // local object) so callers — like checkout submitting an order right
+    // after adding an address — always have a real, valid address id.
+    const { ok, json } = await apiAddAddress(input, makeDefault ?? addresses.length === 0);
+
+    if (!ok || !json.status) {
+      throw new Error(json.message || "Unable to save address.");
+    }
+
+    setAddresses((prev) => {
+      const shouldBeDefault = json.address.isDefault;
+      return shouldBeDefault
+        ? [...prev.map((a) => ({ ...a, isDefault: false })), json.address]
+        : [...prev, json.address];
+    });
+
+    return json.address;
   };
 
-  const updateAddress = (id: string, patch: Partial<AddressInput>) => {
+  const updateAddress = (id: string, patch: AddressInput) => {
+    const previous = addresses;
     setAddresses((prev) => prev.map((a) => (a.id === id ? { ...a, ...patch } : a)));
+
+    apiUpdateAddress(id, patch).then(({ ok, json }) => {
+      if (ok && json.status) {
+        setAddresses((prev) => prev.map((a) => (a.id === id ? json.address : a)));
+      } else {
+        setAddresses(previous);
+      }
+    });
   };
 
   const removeAddress = (id: string) => {
+    const previous = addresses;
     setAddresses((prev) => {
       const removed = prev.find((a) => a.id === id);
       const rest = prev.filter((a) => a.id !== id);
@@ -86,17 +107,26 @@ export function AddressProvider({ children }: { children: ReactNode }) {
       }
       return rest;
     });
+
+    apiDeleteAddress(id).then(({ ok }) => {
+      if (!ok) setAddresses(previous);
+    });
   };
 
   const setDefaultAddress = (id: string) => {
+    const previous = addresses;
     setAddresses((prev) => prev.map((a) => ({ ...a, isDefault: a.id === id })));
+
+    apiSetDefaultAddress(id).then(({ ok }) => {
+      if (!ok) setAddresses(previous);
+    });
   };
 
   const defaultAddress = addresses.find((a) => a.isDefault) ?? addresses[0];
 
   return (
     <AddressContext.Provider
-      value={{ addresses, defaultAddress, addAddress, updateAddress, removeAddress, setDefaultAddress }}
+      value={{ addresses, defaultAddress, hydrated, addAddress, updateAddress, removeAddress, setDefaultAddress }}
     >
       {children}
     </AddressContext.Provider>

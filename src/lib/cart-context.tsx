@@ -8,6 +8,7 @@ import {
   useState,
   type ReactNode,
 } from "react";
+import { apiApplyCoupon } from "./api";
 
 export interface CartLine {
   /** sku + size uniquely identifies a line; same product in a different size is a separate line. */
@@ -29,6 +30,10 @@ interface CartContextValue {
   updateQty: (sku: string, size: string, qty: number) => void;
   removeItem: (sku: string, size: string) => void;
   clear: () => void;
+  couponCode: string | null;
+  couponDiscount: number;
+  applyCoupon: (code: string) => Promise<{ ok: boolean; message?: string }>;
+  removeCoupon: () => void;
 }
 
 const CartContext = createContext<CartContextValue | null>(null);
@@ -42,6 +47,8 @@ function lineKey(sku: string, size: string) {
 export function CartProvider({ children }: { children: ReactNode }) {
   const [items, setItems] = useState<CartLine[]>([]);
   const [hydrated, setHydrated] = useState(false);
+  const [couponCode, setCouponCode] = useState<string | null>(null);
+  const [couponDiscount, setCouponDiscount] = useState(0);
 
   useEffect(() => {
     try {
@@ -85,7 +92,11 @@ export function CartProvider({ children }: { children: ReactNode }) {
     setItems((prev) => prev.filter((i) => lineKey(i.sku, i.size) !== lineKey(sku, size)));
   };
 
-  const clear = () => setItems([]);
+  const clear = () => {
+    setItems([]);
+    setCouponCode(null);
+    setCouponDiscount(0);
+  };
 
   const subtotal = useMemo(
     () => items.reduce((sum, i) => sum + i.price * i.qty, 0),
@@ -96,9 +107,36 @@ export function CartProvider({ children }: { children: ReactNode }) {
     [items]
   );
 
+  const applyCoupon = async (code: string) => {
+    const { ok, json } = await apiApplyCoupon(code, subtotal);
+    if (ok && json.status) {
+      setCouponCode(json.code);
+      setCouponDiscount(json.discount);
+      return { ok: true };
+    }
+    return { ok: false, message: json.message ?? "Invalid discount coupon." };
+  };
+
+  const removeCoupon = () => {
+    setCouponCode(null);
+    setCouponDiscount(0);
+  };
+
   return (
     <CartContext.Provider
-      value={{ items, subtotal, itemCount, addItem, updateQty, removeItem, clear }}
+      value={{
+        items,
+        subtotal,
+        itemCount,
+        addItem,
+        updateQty,
+        removeItem,
+        clear,
+        couponCode,
+        couponDiscount,
+        applyCoupon,
+        removeCoupon,
+      }}
     >
       {children}
     </CartContext.Provider>

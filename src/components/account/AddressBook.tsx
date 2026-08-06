@@ -71,12 +71,18 @@ export default function AddressBook() {
   const { addresses, addAddress, updateAddress } = useAddresses();
   const [editingId, setEditingId] = useState<string | null>(null);
   const [adding, setAdding] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const editingAddress = addresses.find((a) => a.id === editingId);
 
-  function handleAdd(input: AddressInput) {
-    addAddress(input);
-    setAdding(false);
+  async function handleAdd(input: AddressInput) {
+    setError(null);
+    try {
+      await addAddress(input);
+      setAdding(false);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Unable to save address.");
+    }
   }
 
   function handleEdit(input: AddressInput) {
@@ -104,6 +110,7 @@ export default function AddressBook() {
       {adding && (
         <div className="mb-8">
           <AddressForm onSubmit={handleAdd} onCancel={() => setAdding(false)} submitLabel="Add Address" />
+          {error && <p className="mt-3 text-[0.8rem] text-red-500">{error}</p>}
         </div>
       )}
 

@@ -10,7 +10,7 @@ export const metadata: Metadata = {
 const CONTACT_ITEMS = [
   { label: "Website", value: "www.whiteelegance24.com", href: "https://www.whiteelegance24.com" },
   { label: "Phone / WhatsApp", value: "+91 89768 39119", href: "https://wa.me/918976839119" },
-  { label: "Email", value: "amruta.nilatkar.47@gmail.com", href: "mailto:amruta.nilatkar.47@gmail.com" },
+  { label: "Email", value: "amruta@whiteelegance24.com", href: "mailto:amruta@whiteelegance24.com" },
 ];
 
 export default function ContactPage() {

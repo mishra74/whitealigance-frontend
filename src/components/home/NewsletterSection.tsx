@@ -3,7 +3,7 @@
 import { useRef, useState, type FormEvent } from "react";
 import { useSectionReveal } from "@/hooks/useSectionReveal";
 
-const CONTACT_EMAIL = "amruta.nilatkar.47@gmail.com";
+const CONTACT_EMAIL = "amruta@whiteelegance24.com";
 
 export default function NewsletterSection() {
   const sectionRef = useRef<HTMLElement>(null);

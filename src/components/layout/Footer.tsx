@@ -34,8 +34,8 @@ export default function Footer() {
           <a href="https://wa.me/918976839119" target="_blank" rel="noopener noreferrer">
             +91 89768 39119 (WhatsApp)
           </a>
-          <a href="mailto:amruta.nilatkar.47@gmail.com">
-            amruta.nilatkar.47@gmail.com
+          <a href="mailto:amruta@whiteelegance24.com">
+            amruta@whiteelegance24.com
           </a>
         </div>
       </div>

@@ -179,6 +179,28 @@ export async function getApiCategories(): Promise<ApiCategory[]> {
   }));
 }
 
+/* ===========================
+   CMS pages (Privacy Policy, Returns, Terms, etc.)
+=========================== */
+
+export interface ApiPage {
+  id: number;
+  name: string;
+  slug: string;
+  content: string | null;
+}
+
+export async function getApiPage(slug: string): Promise<ApiPage | undefined> {
+  const response = await fetch(`${API_URL}/pages/${slug}`, {
+    next: { revalidate: 3600 },
+  });
+
+  if (!response.ok) return undefined;
+
+  const json: { status: boolean; page: ApiPage } = await response.json();
+  return json.status ? json.page : undefined;
+}
+
 export async function getApiProductsByCollection(
   collectionName: Collection
 ): Promise<Product[]> {

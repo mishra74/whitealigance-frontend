@@ -43,8 +43,10 @@ export default function Footer() {
       <div className={styles.bottom}>
         <span>&copy; {new Date().getFullYear()} WHITE ELEGANCE 24. All rights reserved.</span>
         <span>
-          <a href="#">Privacy Policy</a> · <a href="#">Shipping</a> ·{" "}
-          <a href="#">Returns</a>
+          <Link href="/pages/privacy-policy">Privacy Policy</Link> ·{" "}
+          <Link href="/pages/shipping-policy">Shipping</Link> ·{" "}
+          <Link href="/pages/returns">Returns</Link> ·{" "}
+          <Link href="/pages/terms-conditions">Terms &amp; Conditions</Link>
         </span>
       </div>
     </footer>

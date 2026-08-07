@@ -9,9 +9,12 @@ export const metadata: Metadata = {
 
 const VALUES = [
   { title: "Purity", description: "Nothing added, nothing needed." },
-  { title: "Confidence", description: "Worn, not performed." },
+  { title: "Confidence", description: "Worn by those who don't ask to be noticed." },
+  { title: "Luxury", description: "Quiet, considered, unmistakable." },
   { title: "Grace", description: "Movement, not posture." },
-  { title: "Timelessness", description: "Never in season, never out." },
+  { title: "Strength", description: "Softness that doesn't apologize." },
+  { title: "Timeless Beauty", description: "Never in season, never out of it." },
+  { title: "Minimalism", description: "Less fabric. More presence." },
 ];
 
 export default function AboutPage() {
@@ -90,7 +93,7 @@ export default function AboutPage() {
             What We Stand For
           </span>
           <h2 className="mt-3.5 font-display text-[clamp(1.8rem,3.4vw,2.8rem)] font-normal">
-            Four ideas. One color.
+            Seven words. One color.
           </h2>
           <div className="mt-12 grid grid-cols-2 gap-8 md:grid-cols-4">
             {VALUES.map((value) => (

@@ -409,6 +409,48 @@ export async function apiPlaceOrder(payload: PlaceOrderPayload) {
   });
 }
 
+/**
+ * Starts the Razorpay flow: the backend creates the (unpaid) order and a
+ * Razorpay Payment Link, and returns its URL. The caller is expected to send
+ * the browser there with a full navigation (window.location.href), not a
+ * fetch — Razorpay's hosted checkout is a real redirect, not an API call.
+ */
+export async function apiRazorpayCheckout(payload: PlaceOrderPayload) {
+  return authFetch("/payments/razorpay/checkout", {
+    method: "POST",
+    body: JSON.stringify(payload),
+  });
+}
+
+export interface OrderConfirmationSummary {
+  order_number: string;
+  grand_total: number;
+  payment_status: "paid" | "not paid";
+  payment_method: "cod" | "online";
+}
+
+/**
+ * Public (no auth) summary used by the post-Razorpay-redirect confirmation
+ * page — guests returning from the Razorpay hosted page have no bearer
+ * token, so this can't go through authFetch.
+ */
+export async function getApiOrderConfirmation(
+  orderId: string
+): Promise<OrderConfirmationSummary | undefined> {
+  const response = await fetch(`${API_URL}/orders/${orderId}/confirmation`, {
+    cache: "no-store",
+  });
+
+  if (!response.ok) return undefined;
+
+  const json: { status: boolean } & Partial<OrderConfirmationSummary> =
+    await response.json();
+
+  return json.status
+    ? (json as { status: true } & OrderConfirmationSummary)
+    : undefined;
+}
+
 export async function apiApplyCoupon(code: string, subtotal: number) {
   return authFetch("/coupons/apply", {
     method: "POST",

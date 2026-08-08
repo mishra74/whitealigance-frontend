@@ -1,14 +1,15 @@
 "use client";
 
-import { useEffect, useState, type FormEvent } from "react";
+import { Suspense, useEffect, useState, type FormEvent } from "react";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import { useCart } from "@/lib/cart-context";
 import { useAuth } from "@/lib/auth-context";
 import { useAddresses, type AddressInput } from "@/lib/address-context";
-import { apiPlaceOrder } from "@/lib/api";
+import { apiPlaceOrder, apiRazorpayCheckout } from "@/lib/api";
 import { formatINR } from "@/lib/format";
 import buttons from "@/styles/buttons.module.css";
-import PaymentTabs from "@/components/checkout/PaymentTabs";
+import PaymentTabs, { type PaymentMethod } from "@/components/checkout/PaymentTabs";
 import OrderConfirmation from "@/components/checkout/OrderConfirmation";
 import AddressForm from "@/components/account/AddressForm";
 
@@ -208,12 +209,22 @@ function ShippingAddressSection({
 }
 
 export default function CheckoutPage() {
+  return (
+    <Suspense fallback={null}>
+      <CheckoutPageInner />
+    </Suspense>
+  );
+}
+
+function CheckoutPageInner() {
   const { items, subtotal, couponCode, couponDiscount, clear } = useCart();
   const { user, hydrated } = useAuth();
+  const searchParams = useSearchParams();
 
   const [contactEmail, setContactEmail] = useState("");
   const [contactPhone, setContactPhone] = useState("");
   const [shipping, setShipping] = useState<ShippingSelection | null>(null);
+  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>("online");
 
   // user loads asynchronously after hydration, so the useState initializers
   // above can't see it yet — sync once it becomes available.
@@ -230,6 +241,16 @@ export default function CheckoutPage() {
     grandTotal: number;
   } | null>(null);
 
+  // Razorpay redirects the browser back to /checkout?payment=failed if the
+  // payment attempt didn't succeed — the cart is untouched, so the user can
+  // just try again.
+  useEffect(() => {
+    if (searchParams.get("payment") === "failed") {
+      setSubmitError("Your payment didn't go through. Please try again, or choose Cash on Delivery.");
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   async function handlePlaceOrder(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
 
@@ -241,7 +262,7 @@ export default function CheckoutPage() {
     setSubmitting(true);
     setSubmitError(null);
 
-    const { ok, json } = await apiPlaceOrder({
+    const orderPayload = {
       contact_email: contactEmail,
       contact_phone: contactPhone,
       ...(shipping.type === "saved"
@@ -249,7 +270,29 @@ export default function CheckoutPage() {
         : { shipping: shipping.address }),
       items: items.map((line) => ({ sku: line.sku, qty: line.qty })),
       coupon_code: couponCode ?? undefined,
-    });
+    };
+
+    if (paymentMethod === "online") {
+      const { ok, json } = await apiRazorpayCheckout(orderPayload);
+
+      if (ok && json.status && json.redirect_url) {
+        // Full browser navigation to Razorpay's hosted checkout — not a
+        // fetch. The cart is cleared once the user lands back on the
+        // confirmation page with a confirmed "paid" order.
+        window.location.href = json.redirect_url;
+        return;
+      }
+
+      setSubmitting(false);
+      setSubmitError(
+        json.message ||
+          (json.errors ? Object.values(json.errors).flat().join(" ") : null) ||
+          "Unable to start online payment. Please try again or choose Cash on Delivery."
+      );
+      return;
+    }
+
+    const { ok, json } = await apiPlaceOrder(orderPayload);
 
     setSubmitting(false);
 
@@ -268,7 +311,7 @@ export default function CheckoutPage() {
   if (confirmedOrder) {
     return (
       <div className="mx-auto max-w-[1320px] px-14 max-[1100px]:px-8">
-        <OrderConfirmation orderNumber={confirmedOrder.orderNumber} />
+        <OrderConfirmation orderNumber={confirmedOrder.orderNumber} paymentMethod="cod" />
       </div>
     );
   }
@@ -300,10 +343,6 @@ export default function CheckoutPage() {
       <h1 className="pt-8 pb-2.5 font-display text-[clamp(1.8rem,3.4vw,2.8rem)] font-normal">
         Checkout
       </h1>
-
-      <div className="mb-1 rounded-none bg-ivory px-4 py-2.5 text-[0.75rem] text-muted-bronze">
-        Sandbox / test mode — no real payment will be charged.
-      </div>
 
       <form onSubmit={handlePlaceOrder} className="grid grid-cols-1 gap-16 pt-6 pb-20 lg:grid-cols-[1fr_380px]">
         <div>
@@ -372,7 +411,7 @@ export default function CheckoutPage() {
               </span>
               Payment
             </h3>
-            <PaymentTabs />
+            <PaymentTabs method={paymentMethod} onChange={setPaymentMethod} />
           </div>
         </div>
 
@@ -419,7 +458,13 @@ export default function CheckoutPage() {
             disabled={submitting}
             className={`${buttons.btn} ${buttons.primary} ${buttons.block} mt-6 disabled:opacity-60`}
           >
-            {submitting ? "Placing Order…" : "Place Order"}
+            {submitting
+              ? paymentMethod === "online"
+                ? "Redirecting to Razorpay…"
+                : "Placing Order…"
+              : paymentMethod === "online"
+                ? "Pay Online"
+                : "Place Order"}
           </button>
         </div>
       </form>

@@ -16,28 +16,57 @@ export default function ProductGallery({
   hasPhoto,
 }: ProductGalleryProps) {
   const trackRef = useRef<HTMLDivElement>(null);
-  const [active, setActive] = useState(0);
-  const primary = images[0];
+  const [mobileActive, setMobileActive] = useState(0);
+  const [desktopActive, setDesktopActive] = useState(0);
+  const active = images[desktopActive] ?? images[0];
 
   function handleScroll() {
     const track = trackRef.current;
     if (!track) return;
     const index = Math.round(track.scrollLeft / track.clientWidth);
-    setActive(index);
+    setMobileActive(index);
   }
 
   return (
     <>
-      {/* Desktop — unchanged: single primary image, no gallery UI. */}
-      <div className="relative hidden aspect-[3/4] md:block">
-        <PlaceholderImage
-          src={primary?.url}
-          alt={primary?.altText ?? title}
-          label={hasPhoto ? title : "Photo coming soon"}
-          variant="warm2"
-          className="absolute inset-0"
-          priority
-        />
+      {/* Desktop — large active image plus a thumbnail strip for every
+          photo the admin uploaded (angles, zooms, etc.). */}
+      <div className="hidden md:block">
+        <div className="relative aspect-[3/4]">
+          <PlaceholderImage
+            src={active?.url}
+            alt={active?.altText ?? title}
+            label={hasPhoto ? title : "Photo coming soon"}
+            variant="warm2"
+            className="absolute inset-0"
+            priority
+          />
+        </div>
+
+        {images.length > 1 && (
+          <div className={styles.thumbRow}>
+            {images.map((img, i) => (
+              <button
+                key={img.url}
+                type="button"
+                onClick={() => setDesktopActive(i)}
+                aria-label={`View image ${i + 1} of ${images.length}`}
+                aria-current={i === desktopActive}
+                className={`${styles.thumb} ${
+                  i === desktopActive ? styles.thumbActive : ""
+                }`}
+              >
+                <PlaceholderImage
+                  src={img.url}
+                  alt={img.altText}
+                  label={hasPhoto ? title : "Photo coming soon"}
+                  variant="warm2"
+                  className="absolute inset-0"
+                />
+              </button>
+            ))}
+          </div>
+        )}
       </div>
 
       {/* Mobile — swipeable carousel across every product photo. */}
@@ -66,7 +95,7 @@ export default function ProductGallery({
             {images.map((img, i) => (
               <span
                 key={img.url}
-                className={`${styles.dot} ${i === active ? styles.dotActive : ""}`}
+                className={`${styles.dot} ${i === mobileActive ? styles.dotActive : ""}`}
                 aria-hidden="true"
               />
             ))}

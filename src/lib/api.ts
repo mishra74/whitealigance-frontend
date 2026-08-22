@@ -108,10 +108,12 @@ function normalize(product: ApiProduct): Product {
 }
 
 export async function getApiProducts(): Promise<Product[]> {
+  // Party Wear/Casual Wear/search all render this list on pages already
+  // marked force-dynamic — an hour-long cache here silently undid that,
+  // so a newly-uploaded product could stay invisible on the storefront
+  // for up to an hour after the admin added it.
   const response = await fetch(`${API_URL}/products`, {
-    next: {
-      revalidate: 3600, // Cache for 1 hour
-    },
+    cache: "no-store",
   });
 
   if (!response.ok) {
@@ -142,7 +144,7 @@ export async function getApiProductWithSimilar(
   handle: string
 ): Promise<{ product: Product; similar: Product[] } | undefined> {
   const response = await fetch(`${API_URL}/products/${handle}`, {
-    next: { revalidate: 3600 },
+    cache: "no-store",
   });
 
   if (response.status === 404) return undefined;

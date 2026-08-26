@@ -196,6 +196,12 @@ export default function Header() {
       </div>
 
       <div
+        className={`${styles.mobileNavBackdrop} ${mobileOpen ? styles.mobileNavBackdropOpen : ""}`}
+        onClick={() => setMobileOpen(false)}
+        aria-hidden="true"
+      />
+
+      <div
         className={`${styles.mobileNav} ${mobileOpen ? styles.mobileNavOpen : ""}`}
       >
         <button

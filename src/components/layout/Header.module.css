@@ -240,44 +240,72 @@
 }
 
 /* ---- mobile nav ---- */
-.mobileNav {
+/* A dimmed scrim over the page behind the drawer — without it, a
+   partial-width panel with nothing behind it doesn't read as "sliding
+   out of the site," it just looks like a floating box. */
+.mobileNavBackdrop {
   position: fixed;
   inset: 0;
+  z-index: 590;
+  background: rgba(26, 22, 18, 0.32);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.5s var(--ease-fabric);
+}
+
+.mobileNavBackdropOpen {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.mobileNav {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
   z-index: 600;
   display: flex;
   flex-direction: column;
-  align-items: center;
+  align-items: flex-start;
   justify-content: center;
   gap: 26px;
-  background: rgba(250, 249, 246, 0.92);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
+  width: min(78vw, 400px);
+  padding: 0 20px 0 48px;
+  /* Solid, not blurred — matches .mega's treatment so this reads as a
+     panel of the site's own pages, not a generic frosted overlay. */
+  background: var(--pearl-white);
+  box-shadow: -12px 0 48px rgba(26, 22, 18, 0.14);
   transform: translateX(100%);
-  opacity: 0;
   pointer-events: none;
-  transition: transform 0.5s var(--ease-fabric), opacity 0.5s var(--ease-fabric);
+  transition: transform 0.5s var(--ease-fabric);
 }
 
 .mobileNavOpen {
   transform: translateX(0);
-  opacity: 1;
   pointer-events: auto;
 }
 
 .mobileNav a {
   font-family: var(--font-display);
-  font-size: 1.7rem;
+  font-size: 1.5rem;
   color: var(--charcoal);
 }
 
 .mobileClose {
   position: absolute;
   top: 30px;
-  right: 34px;
+  right: 24px;
   padding: 0;
   font-size: 1.3rem;
   color: var(--charcoal);
   background: none;
   border: none;
   cursor: pointer;
+}
+
+@media (max-width: 380px) {
+  .mobileNav {
+    width: 84vw;
+    padding: 0 16px 0 32px;
+  }
 }

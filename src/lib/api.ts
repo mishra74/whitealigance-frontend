@@ -12,6 +12,12 @@ interface ApiProductImage {
   image: string;
 }
 
+interface ApiProductSize {
+  size: string;
+  sku: string;
+  qty: number;
+}
+
 interface ApiProduct {
   id: number;
   title: string;
@@ -26,6 +32,7 @@ interface ApiProduct {
   status: number;
   is_featured: string;
   product_images: ApiProductImage[];
+  sizes?: ApiProductSize[];
 }
 interface ApiResponse {
   data: {
@@ -82,22 +89,37 @@ function normalize(product: ApiProduct): Product {
 
     images,
 
-    variants: [
-      {
-        size: "Free Size",
+    // A product with real sizes configured (see admin's "Sizes & Stock")
+    // gets one variant per size, each with its own sku/stock; a product
+    // with none configured falls back to the original single "Free Size"
+    // variant, unchanged from before sizes existed.
+    variants: product.sizes && product.sizes.length > 0
+      ? product.sizes.map((s) => ({
+          size: s.size,
+          sku: s.sku,
+          price: {
+            amount: Number(product.price),
+            currencyCode: "INR",
+          },
+          inventoryQuantity: s.qty,
+          available: product.status === 1 && s.qty > 0,
+        }))
+      : [
+          {
+            size: "Free Size",
 
-        sku: product.sku,
+            sku: product.sku,
 
-        price: {
-          amount: Number(product.price),
-          currencyCode: "INR",
-        },
+            price: {
+              amount: Number(product.price),
+              currencyCode: "INR",
+            },
 
-        inventoryQuantity: product.qty,
+            inventoryQuantity: product.qty,
 
-        available: product.status === 1,
-      },
-    ],
+            available: product.status === 1,
+          },
+        ],
 
     tags: [
       product.is_featured === "Yes"

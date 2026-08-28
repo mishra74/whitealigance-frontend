@@ -46,8 +46,6 @@ export default async function ProductPage({
   if (!result) notFound();
   const { product, similar } = result;
 
-  const variant = product.variants[0];
-
   return (
     <div className="mx-auto max-w-[1320px] px-14 pb-20 max-[1100px]:px-8">
       <div className="py-6 text-[0.72rem] tracking-[0.03em] text-warm-gray">
@@ -83,21 +81,10 @@ export default async function ProductPage({
             {formatPrice(product)}
           </div>
 
-          <div className="mb-5">
-            <span className="mb-2.5 block text-[0.68rem] uppercase tracking-[0.14em] text-warm-gray">
-              Size
-            </span>
-            <div className="flex h-[42px] w-fit min-w-[42px] items-center justify-center border border-charcoal bg-charcoal px-4 text-[0.8rem] text-pearl-white">
-              {variant?.size}
-            </div>
-          </div>
-
           <AddToCartControls
             handle={product.handle}
-            sku={variant?.sku ?? product.id}
             title={product.title}
-            size={variant?.size ?? "Free Size"}
-            price={variant?.price.amount ?? 0}
+            variants={product.variants}
             image={productImageSrc(product)}
             imageLabel={product.hasPhoto ? product.title : "Photo coming soon"}
           />

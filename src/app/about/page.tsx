@@ -4,7 +4,7 @@ import PlaceholderImage from "@/components/ui/PlaceholderImage";
 export const metadata: Metadata = {
   title: "About | WHITE ELEGANCE 24",
   description:
-    "WHITE ELEGANCE 24 is a luxury fashion label devoted exclusively to elegant white clothing for women — the story, the atelier, and what we stand for.",
+    "WHITE ELEGANCE 24 is a luxury fashion label devoted exclusively to elegant white clothing for women — the story and what we stand for.",
 };
 
 const VALUES = [
@@ -23,8 +23,8 @@ export default function AboutPage() {
       <section className="relative flex h-[56vh] min-h-[400px] items-center justify-center overflow-hidden text-center">
         <PlaceholderImage
           src="/assets/images/about/about-hero-atelier.png"
-          alt="WHITE ELEGANCE 24 atelier"
-          label="Brand portrait — atelier or founder"
+          alt="WHITE ELEGANCE 24"
+          label="Brand portrait — founder or lifestyle shot"
           variant="warm2"
           className="absolute inset-0"
           priority
@@ -40,8 +40,8 @@ export default function AboutPage() {
           <div className="relative aspect-[4/5]">
             <PlaceholderImage
               src="/assets/images/about/about-our-story.png"
-              alt="The atelier"
-              label="Founder or studio detail"
+              alt="WHITE ELEGANCE 24"
+              label="Founder or brand detail"
               variant="warm1"
               className="absolute inset-0"
             />
@@ -65,23 +65,23 @@ export default function AboutPage() {
           <div className="relative aspect-[4/5] md:order-2">
             <PlaceholderImage
               src="/assets/images/about/about-atelier-detail.png"
-              alt="Craftsmanship detail"
-              label="Hand-finishing detail shot"
+              alt="Fabric detail"
+              label="Fabric or fit detail shot"
               variant="warm3"
               className="absolute inset-0"
             />
           </div>
           <div className="md:order-1">
             <span className="text-[0.72rem] font-semibold uppercase tracking-[0.22em] text-muted-bronze">
-              The Atelier
+              Our Standards
             </span>
             <h2 className="mt-3.5 font-display text-[clamp(1.8rem,3vw,2.4rem)] font-normal">
-              Every stitch, considered.
+              Every piece, held to the same standard.
             </h2>
             <p className="mt-4 max-w-[420px] text-warm-gray">
-              Our pieces are cut in small batches, tailored close to the
-              body, finished by hand. Nothing leaves the atelier until it
-              moves the way it should.
+              We work with trusted manufacturing partners and check every
+              piece for fabric, fit, and finish before it earns the WHITE
+              ELEGANCE 24 name.
             </p>
           </div>
         </div>

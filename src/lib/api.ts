@@ -433,46 +433,48 @@ export async function apiPlaceOrder(payload: PlaceOrderPayload) {
   });
 }
 
+export interface RazorpayOrderResponse {
+  status: boolean;
+  order_id?: number;
+  razorpay_order_id?: string;
+  razorpay_key?: string;
+  amount?: number;
+  currency?: string;
+  name?: string;
+  description?: string;
+  prefill?: { name: string; email: string; contact: string };
+  message?: string;
+  errors?: Record<string, string[]>;
+}
+
 /**
- * Starts the Razorpay flow: the backend creates the (unpaid) order and a
- * Razorpay Payment Link, and returns its URL. The caller is expected to send
- * the browser there with a full navigation (window.location.href), not a
- * fetch — Razorpay's hosted checkout is a real redirect, not an API call.
+ * Creates the (unpaid) order + a matching Razorpay order server-side, for
+ * the caller to open the Standard Checkout modal with (checkout.js) — the
+ * customer never leaves the page.
  */
-export async function apiRazorpayCheckout(payload: PlaceOrderPayload) {
-  return authFetch("/payments/razorpay/checkout", {
+export async function apiRazorpayOrder(payload: PlaceOrderPayload) {
+  return authFetch("/payments/razorpay/order", {
     method: "POST",
     body: JSON.stringify(payload),
   });
 }
 
-export interface OrderConfirmationSummary {
-  order_number: string;
-  grand_total: number;
-  payment_status: "paid" | "not paid";
-  payment_method: "cod" | "online";
+export interface RazorpayVerifyPayload {
+  order_id: number;
+  razorpay_order_id: string;
+  razorpay_payment_id: string;
+  razorpay_signature: string;
 }
 
 /**
- * Public (no auth) summary used by the post-Razorpay-redirect confirmation
- * page — guests returning from the Razorpay hosted page have no bearer
- * token, so this can't go through authFetch.
+ * Verifies the Standard Checkout signature server-side and marks the order
+ * paid — called from the modal's success handler.
  */
-export async function getApiOrderConfirmation(
-  orderId: string
-): Promise<OrderConfirmationSummary | undefined> {
-  const response = await fetch(`${API_URL}/orders/${orderId}/confirmation`, {
-    cache: "no-store",
+export async function apiRazorpayVerify(payload: RazorpayVerifyPayload) {
+  return authFetch("/payments/razorpay/verify", {
+    method: "POST",
+    body: JSON.stringify(payload),
   });
-
-  if (!response.ok) return undefined;
-
-  const json: { status: boolean } & Partial<OrderConfirmationSummary> =
-    await response.json();
-
-  return json.status
-    ? (json as { status: true } & OrderConfirmationSummary)
-    : undefined;
 }
 
 export async function apiApplyCoupon(code: string, subtotal: number) {

@@ -1,17 +1,47 @@
 "use client";
 
-import { Suspense, useEffect, useState, type FormEvent } from "react";
+import { useEffect, useState, type FormEvent } from "react";
 import Link from "next/link";
-import { useSearchParams } from "next/navigation";
+import Script from "next/script";
 import { useCart } from "@/lib/cart-context";
 import { useAuth } from "@/lib/auth-context";
 import { useAddresses, type AddressInput } from "@/lib/address-context";
-import { apiPlaceOrder, apiRazorpayCheckout } from "@/lib/api";
+import { apiPlaceOrder, apiRazorpayOrder, apiRazorpayVerify } from "@/lib/api";
 import { formatINR } from "@/lib/format";
 import buttons from "@/styles/buttons.module.css";
 import PaymentTabs, { type PaymentMethod } from "@/components/checkout/PaymentTabs";
 import OrderConfirmation from "@/components/checkout/OrderConfirmation";
 import AddressForm from "@/components/account/AddressForm";
+
+interface RazorpayResponse {
+  razorpay_order_id: string;
+  razorpay_payment_id: string;
+  razorpay_signature: string;
+}
+
+interface RazorpayOptions {
+  key: string;
+  amount: number;
+  currency: string;
+  name: string;
+  description: string;
+  order_id: string;
+  prefill: { name: string; email: string; contact: string };
+  theme?: { color: string };
+  handler: (response: RazorpayResponse) => void;
+  modal?: { ondismiss?: () => void };
+}
+
+interface RazorpayInstance {
+  open: () => void;
+  on: (event: "payment.failed", handler: (response: { error: { description: string } }) => void) => void;
+}
+
+declare global {
+  interface Window {
+    Razorpay?: new (options: RazorpayOptions) => RazorpayInstance;
+  }
+}
 
 const FREE_SHIPPING_THRESHOLD = 5000;
 // Matches the real ShippingCharge row for India in the database (₹50) — the
@@ -209,18 +239,10 @@ function ShippingAddressSection({
 }
 
 export default function CheckoutPage() {
-  return (
-    <Suspense fallback={null}>
-      <CheckoutPageInner />
-    </Suspense>
-  );
-}
-
-function CheckoutPageInner() {
   const { items, subtotal, couponCode, couponDiscount, clear } = useCart();
   const { user, hydrated } = useAuth();
-  const searchParams = useSearchParams();
 
+  const [razorpayReady, setRazorpayReady] = useState(false);
   const [contactEmail, setContactEmail] = useState("");
   const [contactPhone, setContactPhone] = useState("");
   const [shipping, setShipping] = useState<ShippingSelection | null>(null);
@@ -239,17 +261,8 @@ function CheckoutPageInner() {
   const [confirmedOrder, setConfirmedOrder] = useState<{
     orderNumber: string;
     grandTotal: number;
+    paymentMethod: PaymentMethod;
   } | null>(null);
-
-  // Razorpay redirects the browser back to /checkout?payment=failed if the
-  // payment attempt didn't succeed — the cart is untouched, so the user can
-  // just try again.
-  useEffect(() => {
-    if (searchParams.get("payment") === "failed") {
-      setSubmitError("Your payment didn't go through. Please try again, or choose Cash on Delivery.");
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
 
   async function handlePlaceOrder(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -273,22 +286,79 @@ function CheckoutPageInner() {
     };
 
     if (paymentMethod === "online") {
-      const { ok, json } = await apiRazorpayCheckout(orderPayload);
-
-      if (ok && json.status && json.redirect_url) {
-        // Full browser navigation to Razorpay's hosted checkout — not a
-        // fetch. The cart is cleared once the user lands back on the
-        // confirmation page with a confirmed "paid" order.
-        window.location.href = json.redirect_url;
+      if (!razorpayReady || !window.Razorpay) {
+        setSubmitting(false);
+        setSubmitError("Payment is still loading. Please try again in a moment.");
         return;
       }
 
-      setSubmitting(false);
-      setSubmitError(
-        json.message ||
-          (json.errors ? Object.values(json.errors).flat().join(" ") : null) ||
-          "Unable to start online payment. Please try again or choose Cash on Delivery."
-      );
+      const { ok, json } = await apiRazorpayOrder(orderPayload);
+
+      if (
+        !ok ||
+        !json.status ||
+        !json.razorpay_order_id ||
+        !json.razorpay_key ||
+        !json.order_id ||
+        !json.amount
+      ) {
+        setSubmitting(false);
+        setSubmitError(
+          json.message ||
+            (json.errors ? Object.values(json.errors).flat().join(" ") : null) ||
+            "Unable to start online payment. Please try again or choose Cash on Delivery."
+        );
+        return;
+      }
+
+      const internalOrderId = json.order_id;
+
+      const razorpay = new window.Razorpay({
+        key: json.razorpay_key,
+        amount: json.amount,
+        currency: json.currency ?? "INR",
+        name: json.name ?? "WHITE ELEGANCE 24",
+        description: json.description ?? "",
+        order_id: json.razorpay_order_id,
+        prefill: json.prefill ?? { name: "", email: contactEmail, contact: contactPhone },
+        theme: { color: "#1a1815" },
+        handler: async (response) => {
+          const verify = await apiRazorpayVerify({
+            order_id: internalOrderId,
+            razorpay_order_id: response.razorpay_order_id,
+            razorpay_payment_id: response.razorpay_payment_id,
+            razorpay_signature: response.razorpay_signature,
+          });
+
+          setSubmitting(false);
+
+          if (verify.ok && verify.json.status) {
+            clear();
+            setConfirmedOrder({
+              orderNumber: verify.json.order_number,
+              grandTotal: verify.json.grand_total,
+              paymentMethod: "online",
+            });
+          } else {
+            setSubmitError(
+              verify.json.message ||
+                "We couldn't confirm your payment. If money was deducted, it will be refunded automatically — please contact us if you're unsure."
+            );
+          }
+        },
+        modal: {
+          ondismiss: () => {
+            setSubmitting(false);
+          },
+        },
+      });
+
+      razorpay.on("payment.failed", (response) => {
+        setSubmitting(false);
+        setSubmitError(response.error?.description || "Your payment didn't go through. Please try again.");
+      });
+
+      razorpay.open();
       return;
     }
 
@@ -298,7 +368,7 @@ function CheckoutPageInner() {
 
     if (ok && json.status) {
       clear();
-      setConfirmedOrder({ orderNumber: json.order_number, grandTotal: json.grand_total });
+      setConfirmedOrder({ orderNumber: json.order_number, grandTotal: json.grand_total, paymentMethod: "cod" });
     } else {
       setSubmitError(
         json.message ||
@@ -311,7 +381,7 @@ function CheckoutPageInner() {
   if (confirmedOrder) {
     return (
       <div className="mx-auto max-w-[1320px] px-14 max-[1100px]:px-8">
-        <OrderConfirmation orderNumber={confirmedOrder.orderNumber} paymentMethod="cod" />
+        <OrderConfirmation orderNumber={confirmedOrder.orderNumber} paymentMethod={confirmedOrder.paymentMethod} />
       </div>
     );
   }
@@ -340,6 +410,11 @@ function CheckoutPageInner() {
 
   return (
     <div className="mx-auto max-w-[1320px] px-14 max-[1100px]:px-8">
+      <Script
+        src="https://checkout.razorpay.com/v1/checkout.js"
+        onLoad={() => setRazorpayReady(true)}
+      />
+
       <h1 className="pt-8 pb-2.5 font-display text-[clamp(1.8rem,3.4vw,2.8rem)] font-normal">
         Checkout
       </h1>
@@ -460,7 +535,7 @@ function CheckoutPageInner() {
           >
             {submitting
               ? paymentMethod === "online"
-                ? "Redirecting to Razorpay…"
+                ? "Opening Payment…"
                 : "Placing Order…"
               : paymentMethod === "online"
                 ? "Pay Online"

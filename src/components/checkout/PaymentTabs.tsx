@@ -38,9 +38,8 @@ export default function PaymentTabs({
 
       {method === "online" ? (
         <p className="mb-5 text-[0.85rem] text-warm-gray">
-          You&apos;ll be redirected to Razorpay to complete your payment
-          securely — UPI, cards, netbanking, and wallets are all supported
-          there.
+          A secure Razorpay payment window will open — UPI, cards,
+          netbanking, and wallets are all supported.
         </p>
       ) : (
         <p className="mb-5 text-[0.85rem] text-warm-gray">

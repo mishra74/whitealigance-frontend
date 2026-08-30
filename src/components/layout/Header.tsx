@@ -26,6 +26,13 @@ const MOBILE_NAV_ITEMS = [
   { label: "Contact", href: "/contact" },
 ];
 
+// next.config.ts sets trailingSlash: true, so usePathname() returns
+// "/casual-wear/" while nav hrefs are written as "/casual-wear" — compare
+// with trailing slashes stripped so "current page" detection actually matches.
+function stripTrailingSlash(path: string): string {
+  return path.length > 1 ? path.replace(/\/$/, "") : path;
+}
+
 const ICON_LINKS = [
   { label: "Search", href: "/search", Icon: Search },
   { label: "Wishlist", href: "/wishlist", Icon: Heart },
@@ -93,6 +100,18 @@ export default function Header() {
 
   const solid = !isHome || scrolled;
 
+  // Clicking a link to the page you're already on should just close the
+  // dropdown/drawer — never a reload or a no-op navigation. Clicking a
+  // different page closes it too (immediately, rather than waiting for the
+  // pathname-change effect) and lets the normal navigation proceed.
+  function handleNavLinkClick(e: React.MouseEvent<HTMLAnchorElement>, href: string) {
+    setMegaOpen(false);
+    setMobileOpen(false);
+    if (stripTrailingSlash(pathname) === stripTrailingSlash(href)) {
+      e.preventDefault();
+    }
+  }
+
   return (
     <>
       <header
@@ -129,8 +148,11 @@ export default function Header() {
                 key={item.label}
                 href={item.href}
                 className={`${styles.navLink} ${
-                  pathname === item.href ? styles.navLinkActive : ""
+                  stripTrailingSlash(pathname) === stripTrailingSlash(item.href)
+                    ? styles.navLinkActive
+                    : ""
                 }`}
+                onClick={(e) => handleNavLinkClick(e, item.href)}
               >
                 {item.label}
               </Link>
@@ -173,7 +195,11 @@ export default function Header() {
         ref={megaRef}
         className={`${styles.mega} ${megaOpen ? styles.megaOpen : ""}`}
       >
-        <Link href="/party-wear" className={styles.megaCard}>
+        <Link
+          href="/party-wear"
+          className={styles.megaCard}
+          onClick={(e) => handleNavLinkClick(e, "/party-wear")}
+        >
           <PlaceholderImage
             src="/assets/images/collections/party-wear-hero.png"
             alt="Party Wear lookbook"
@@ -183,7 +209,11 @@ export default function Header() {
           />
           <span className={styles.megaCardLabel}>Party Wear</span>
         </Link>
-        <Link href="/casual-wear" className={styles.megaCard}>
+        <Link
+          href="/casual-wear"
+          className={styles.megaCard}
+          onClick={(e) => handleNavLinkClick(e, "/casual-wear")}
+        >
           <PlaceholderImage
             src="/assets/images/collections/casual-wear-hero.png"
             alt="Casual Wear lookbook"
@@ -213,7 +243,11 @@ export default function Header() {
           <X size={22} strokeWidth={1.5} />
         </button>
         {MOBILE_NAV_ITEMS.map((item) => (
-          <Link key={item.label} href={item.href}>
+          <Link
+            key={item.label}
+            href={item.href}
+            onClick={(e) => handleNavLinkClick(e, item.href)}
+          >
             {item.label}
           </Link>
         ))}

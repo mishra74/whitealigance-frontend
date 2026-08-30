@@ -17,7 +17,7 @@
   --charcoal:     #2B2825; /* headings, primary text (never pure #000) */
 
   /* ---- Typography ---- */
-  --font-display: 'Fraunces', serif;
+  --font-display: 'Cormorant Garamond', serif;
   --font-body: 'Instrument Sans', sans-serif;
 
   --text-hero: clamp(2.6rem, 8vw, 5.2rem);
@@ -63,7 +63,7 @@
      charcoal:       '#2B2825',
    },
    fontFamily: {
-     display: ['Fraunces', 'serif'],
+     display: ['Cormorant Garamond', 'serif'],
      body: ['Instrument Sans', 'sans-serif'],
    },
    spacing: {

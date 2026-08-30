@@ -29,8 +29,9 @@ export default function AddToCartControls({
   const { isWishlisted, toggle: toggleWishlist } = useWishlist();
   const [qty, setQty] = useState(1);
   const [added, setAdded] = useState(false);
-  // Real sizes only need a selector when there's more than one — a
-  // single "Free Size" variant (or a single real size) is pre-selected.
+  // A single "Free Size" variant (no sizes configured for this product)
+  // needs no selector; once any size is configured, normalize() always
+  // pads to the full S/M/L/XL/XXL/XXXL row (6 variants).
   const showSizeSelector = variants.length > 1;
   const firstAvailable = variants.find((v) => v.available) ?? variants[0];
   const [selectedSize, setSelectedSize] = useState<string | undefined>(

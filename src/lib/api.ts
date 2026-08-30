@@ -63,6 +63,10 @@ function imageUrl(image?: string): string {
   return `${baseUrl()}/uploads/product/large/${image}`;
 }
 
+// The full set of sizes the admin's "Sizes & Stock" panel offers, in
+// display order — kept in sync with ProductSize's backend enum.
+const ALL_SIZES = ["S", "M", "L", "XL", "XXL", "XXXL"] as const;
+
 function normalize(product: ApiProduct): Product {
   const images: ProductImage[] =
   product.product_images?.map((img) => ({
@@ -89,21 +93,26 @@ function normalize(product: ApiProduct): Product {
 
     images,
 
-    // A product with real sizes configured (see admin's "Sizes & Stock")
-    // gets one variant per size, each with its own sku/stock; a product
-    // with none configured falls back to the original single "Free Size"
-    // variant, unchanged from before sizes existed.
+    // A product with at least one size configured (see admin's "Sizes &
+    // Stock") always shows the full S/M/L/XL/XXL/XXXL row — sizes the admin
+    // didn't check, or checked with zero stock, still appear but stay
+    // unavailable (disabled), rather than just being left off the row. A
+    // product with no sizes configured at all keeps the original single
+    // "Free Size" variant, unchanged from before sizes existed.
     variants: product.sizes && product.sizes.length > 0
-      ? product.sizes.map((s) => ({
-          size: s.size,
-          sku: s.sku,
-          price: {
-            amount: Number(product.price),
-            currencyCode: "INR",
-          },
-          inventoryQuantity: s.qty,
-          available: product.status === 1 && s.qty > 0,
-        }))
+      ? ALL_SIZES.map((size) => {
+          const configured = product.sizes!.find((s) => s.size === size);
+          return {
+            size,
+            sku: configured?.sku ?? "",
+            price: {
+              amount: Number(product.price),
+              currencyCode: "INR",
+            },
+            inventoryQuantity: configured?.qty ?? 0,
+            available: product.status === 1 && !!configured && configured.qty > 0,
+          };
+        })
       : [
           {
             size: "Free Size",

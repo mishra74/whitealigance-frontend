@@ -336,7 +336,7 @@ export default function CheckoutPage() {
             razorpay_order_id: response.razorpay_order_id,
             razorpay_payment_id: response.razorpay_payment_id,
             razorpay_signature: response.razorpay_signature,
-          });
+          }).catch(() => ({ ok: false, status: 0, json: {} as { status?: boolean; message?: string; errors?: Record<string, string[]>; order_id?: number } }));
 
           setSubmitting(false);
 
@@ -347,7 +347,8 @@ export default function CheckoutPage() {
           } else {
             setSubmitError(
               verify.json.message ||
-                "We couldn't confirm your payment. If money was deducted, it will be refunded automatically — please contact us if you're unsure."
+                (verify.json.errors ? Object.values(verify.json.errors).flat().join(" ") : null) ||
+                `We couldn't confirm your payment (error ${verify.status || "unknown"}). If money was deducted, it will be refunded automatically — please contact us with your order details if you're unsure.`
             );
           }
         },

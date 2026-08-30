@@ -7,7 +7,7 @@
   and subset them. Point the design-token names at the loaded variables.
 */
 :root {
-  --font-display: var(--font-fraunces), serif;
+  --font-display: var(--font-cormorant-garamond), serif;
   --font-body: var(--font-instrument-sans), sans-serif;
 }
 

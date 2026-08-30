@@ -485,6 +485,52 @@ export async function apiApplyCoupon(code: string, subtotal: number) {
 }
 
 /* ===========================
+   My Orders
+=========================== */
+
+export interface ApiOrder {
+  id: number;
+  subtotal: number;
+  shipping: number;
+  coupon_code: string | null;
+  discount: number;
+  grand_total: number;
+  payment_status: "paid" | "not paid";
+  payment_method: "cod" | "online";
+  status: "pending" | "shipped" | "delivered" | "cancelled";
+  shipped_date: string | null;
+  first_name: string;
+  last_name: string;
+  email: string;
+  mobile: string;
+  address: string;
+  apartment: string | null;
+  city: string;
+  state: string;
+  zip: string;
+  notes: string | null;
+  created_at: string;
+}
+
+export interface ApiOrderItem {
+  id: number;
+  product_id: number;
+  name: string;
+  size: string | null;
+  qty: number;
+  price: number;
+  total: number;
+}
+
+export async function apiGetOrders() {
+  return authFetch("/orders");
+}
+
+export async function apiGetOrder(id: string | number) {
+  return authFetch(`/orders/${id}`);
+}
+
+/* ===========================
    Contact
 =========================== */
 

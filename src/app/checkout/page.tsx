@@ -11,7 +11,6 @@ import { apiPlaceOrder, apiRazorpayOrder, apiRazorpayVerify } from "@/lib/api";
 import { formatINR } from "@/lib/format";
 import buttons from "@/styles/buttons.module.css";
 import PaymentTabs, { type PaymentMethod } from "@/components/checkout/PaymentTabs";
-import OrderConfirmation from "@/components/checkout/OrderConfirmation";
 import AddressForm from "@/components/account/AddressForm";
 
 interface RazorpayResponse {
@@ -269,11 +268,9 @@ export default function CheckoutPage() {
 
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
-  const [confirmedOrder, setConfirmedOrder] = useState<{
-    orderNumber: string;
-    grandTotal: number;
-    paymentMethod: PaymentMethod;
-  } | null>(null);
+  // Guards against a one-frame "your cart is empty" flash between clear()
+  // and the router.push() actually navigating away from this page.
+  const [redirecting, setRedirecting] = useState(false);
 
   async function handlePlaceOrder(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -344,12 +341,9 @@ export default function CheckoutPage() {
           setSubmitting(false);
 
           if (verify.ok && verify.json.status) {
+            setRedirecting(true);
             clear();
-            setConfirmedOrder({
-              orderNumber: verify.json.order_number,
-              grandTotal: verify.json.grand_total,
-              paymentMethod: "online",
-            });
+            router.push(`/account/orders/${verify.json.order_id}?new=1`);
           } else {
             setSubmitError(
               verify.json.message ||
@@ -378,8 +372,9 @@ export default function CheckoutPage() {
     setSubmitting(false);
 
     if (ok && json.status) {
+      setRedirecting(true);
       clear();
-      setConfirmedOrder({ orderNumber: json.order_number, grandTotal: json.grand_total, paymentMethod: "cod" });
+      router.push(`/account/orders/${json.order_id}?new=1`);
     } else {
       setSubmitError(
         json.message ||
@@ -397,10 +392,10 @@ export default function CheckoutPage() {
     );
   }
 
-  if (confirmedOrder) {
+  if (redirecting) {
     return (
-      <div className="mx-auto max-w-[1320px] px-14 max-[1100px]:px-8">
-        <OrderConfirmation orderNumber={confirmedOrder.orderNumber} paymentMethod={confirmedOrder.paymentMethod} />
+      <div className="mx-auto max-w-[1320px] px-14 py-24 text-center text-warm-gray max-[1100px]:px-8">
+        Taking you to your order…
       </div>
     );
   }

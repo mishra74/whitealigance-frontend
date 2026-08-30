@@ -2,6 +2,7 @@
 
 import { useEffect, useState, type FormEvent } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import Script from "next/script";
 import { useCart } from "@/lib/cart-context";
 import { useAuth } from "@/lib/auth-context";
@@ -239,6 +240,7 @@ function ShippingAddressSection({
 }
 
 export default function CheckoutPage() {
+  const router = useRouter();
   const { items, subtotal, couponCode, couponDiscount, clear } = useCart();
   const { user, hydrated } = useAuth();
 
@@ -255,6 +257,15 @@ export default function CheckoutPage() {
     setContactEmail((prev) => prev || user.email || "");
     setContactPhone((prev) => prev || user.phone || "");
   }, [hydrated, user]);
+
+  // Checkout now requires an account — guests are sent to log in first and
+  // land back here (cart persists in localStorage) to actually place the
+  // order once they're signed in.
+  useEffect(() => {
+    if (hydrated && !user) {
+      router.replace("/login?redirect=/checkout");
+    }
+  }, [hydrated, user, router]);
 
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
@@ -378,6 +389,14 @@ export default function CheckoutPage() {
     }
   }
 
+  if (!hydrated || !user) {
+    return (
+      <div className="mx-auto max-w-[1320px] px-14 py-24 text-center text-warm-gray max-[1100px]:px-8">
+        Redirecting to login…
+      </div>
+    );
+  }
+
   if (confirmedOrder) {
     return (
       <div className="mx-auto max-w-[1320px] px-14 max-[1100px]:px-8">
@@ -422,16 +441,7 @@ export default function CheckoutPage() {
       <form onSubmit={handlePlaceOrder} className="grid grid-cols-1 gap-16 pt-6 pb-20 lg:grid-cols-[1fr_380px]">
         <div>
           <div className="mb-6 text-[0.82rem] text-warm-gray">
-            {hydrated && user ? (
-              `Checking out as ${user.name}`
-            ) : (
-              <>
-                Checking out as guest —{" "}
-                <Link href="/login" className="text-soft-gold underline">
-                  log in instead
-                </Link>
-              </>
-            )}
+            Checking out as {user.name}
           </div>
 
           <div className="mb-11">

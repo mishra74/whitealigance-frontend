@@ -1,7 +1,7 @@
 "use client";
 
-import { useEffect, useState, type FormEvent } from "react";
-import { useRouter } from "next/navigation";
+import { Suspense, useEffect, useState, type FormEvent } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import PlaceholderImage from "@/components/ui/PlaceholderImage";
 import buttons from "@/styles/buttons.module.css";
 import { useAuth } from "@/lib/auth-context";
@@ -11,10 +11,22 @@ import GoogleSignInButton from "@/components/auth/GoogleSignInButton";
 type Tab = "login" | "register";
 
 export default function LoginPage() {
+  return (
+    <Suspense fallback={null}>
+      <LoginPageInner />
+    </Suspense>
+  );
+}
+
+function LoginPageInner() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { user, hydrated, setSession } = useAuth();
   const [tab, setTab] = useState<Tab>("login");
   const googleClientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID;
+  // Checkout sends guests here as /login?redirect=/checkout so they land
+  // back where they were trying to go once they're signed in.
+  const redirectTo = searchParams.get("redirect") || "/account";
 
   const [loginEmail, setLoginEmail] = useState("");
   const [loginPassword, setLoginPassword] = useState("");
@@ -28,7 +40,8 @@ export default function LoginPage() {
   const [passwordConfirmation, setPasswordConfirmation] = useState("");
 
   useEffect(() => {
-    if (hydrated && user) router.replace("/account");
+    if (hydrated && user) router.replace(redirectTo);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [hydrated, user, router]);
 
   async function handleLogin(e: FormEvent) {
@@ -45,7 +58,7 @@ export default function LoginPage() {
 
       if (res.status) {
         setSession(res.token, res.user ?? { name: loginEmail, email: loginEmail });
-        router.push("/account");
+        router.push(redirectTo);
       } else {
         setErrors(res.message || "Invalid email or password");
       }
@@ -71,7 +84,7 @@ export default function LoginPage() {
 
       if (res.status) {
         setSession(res.token, res.user ?? { name, email: registerEmail, phone });
-        router.push("/account");
+        router.push(redirectTo);
       } else if (res.errors) {
         setErrors(JSON.stringify(res.errors));
       } else {
@@ -107,7 +120,7 @@ export default function LoginPage() {
               <GoogleSignInButton
                 onSuccess={(token, user) => {
                   setSession(token, user);
-                  router.push("/account");
+                  router.push(redirectTo);
                 }}
                 onError={(message) => setErrors(message)}
               />
@@ -264,8 +277,8 @@ export default function LoginPage() {
           )}
 
           <p className="mt-6 text-[0.72rem] text-muted-bronze">
-            Checkout is running in sandbox mode until a live payment gateway
-            is connected — your account itself is real.
+            An account is required to check out — it lets us confirm your
+            order and keep your addresses on file for next time.
           </p>
         </div>
       </div>

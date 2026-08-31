@@ -93,42 +93,25 @@ function normalize(product: ApiProduct): Product {
 
     images,
 
-    // A product with at least one size configured (see admin's "Sizes &
-    // Stock") always shows the full S/M/L/XL/XXL/XXXL row — sizes the admin
-    // didn't check, or checked with zero stock, still appear but stay
-    // unavailable (disabled), rather than just being left off the row. A
-    // product with no sizes configured at all keeps the original single
-    // "Free Size" variant, unchanged from before sizes existed.
-    variants: product.sizes && product.sizes.length > 0
-      ? ALL_SIZES.map((size) => {
-          const configured = product.sizes!.find((s) => s.size === size);
-          return {
-            size,
-            sku: configured?.sku ?? "",
-            price: {
-              amount: Number(product.price),
-              currencyCode: "INR",
-            },
-            inventoryQuantity: configured?.qty ?? 0,
-            available: product.status === 1 && !!configured && configured.qty > 0,
-          };
-        })
-      : [
-          {
-            size: "Free Size",
-
-            sku: product.sku,
-
-            price: {
-              amount: Number(product.price),
-              currencyCode: "INR",
-            },
-
-            inventoryQuantity: product.qty,
-
-            available: product.status === 1,
-          },
-        ],
+    // Every product always shows the full S/M/L/XL/XXL/XXXL row, regardless
+    // of whether the admin has configured any sizes for it yet — sizes with
+    // no matching ProductSize row (or zero stock) show disabled rather than
+    // being left off. This intentionally makes an unsized product's sizes
+    // all-disabled (not purchasable) rather than inventing availability
+    // that hasn't actually been confirmed in the admin panel.
+    variants: ALL_SIZES.map((size) => {
+      const configured = product.sizes?.find((s) => s.size === size);
+      return {
+        size,
+        sku: configured?.sku ?? "",
+        price: {
+          amount: Number(product.price),
+          currencyCode: "INR",
+        },
+        inventoryQuantity: configured?.qty ?? 0,
+        available: product.status === 1 && !!configured && configured.qty > 0,
+      };
+    }),
 
     tags: [
       product.is_featured === "Yes"

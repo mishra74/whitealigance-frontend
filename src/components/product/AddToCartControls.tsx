@@ -33,13 +33,20 @@ export default function AddToCartControls({
   // needs no selector; once any size is configured, normalize() always
   // pads to the full S/M/L/XL/XXL/XXXL row (6 variants).
   const showSizeSelector = variants.length > 1;
-  const firstAvailable = variants.find((v) => v.available) ?? variants[0];
   const [selectedSize, setSelectedSize] = useState<string | undefined>(
-    firstAvailable?.size
+    // Sized products start with nothing chosen — the customer must
+    // actively pick a size. An unsized product has only one real
+    // option, so there's nothing to make them choose.
+    showSizeSelector ? undefined : variants[0]?.size
   );
   const [sizeError, setSizeError] = useState(false);
-  const selectedVariant =
-    variants.find((v) => v.size === selectedSize) ?? variants[0];
+  const selectedVariant = showSizeSelector
+    ? variants.find((v) => v.size === selectedSize)
+    : variants[0];
+  // Price doesn't vary by size in this system, so the sticky bar can show
+  // it even before a size is chosen — falls back to the first variant.
+  const displayPrice = (selectedVariant ?? variants[0])?.price.amount ?? 0;
+  const maxQty = selectedVariant?.inventoryQuantity ?? undefined;
   const wishlisted = isWishlisted(handle);
   const addToCartRef = useRef<HTMLButtonElement>(null);
   useMagneticButton(addToCartRef);
@@ -72,7 +79,7 @@ export default function AddToCartControls({
       {showSizeSelector && (
         <div className="mb-5">
           <span className="mb-2.5 block text-[0.68rem] uppercase tracking-[0.14em] text-warm-gray">
-            Size
+            Select Size
           </span>
           <div className="flex flex-wrap gap-2">
             {variants.map((v) => {
@@ -85,14 +92,15 @@ export default function AddToCartControls({
                   onClick={() => {
                     setSelectedSize(v.size);
                     setSizeError(false);
+                    setQty(1);
                   }}
                   aria-pressed={isSelected}
                   className={`flex h-[42px] min-w-[42px] items-center justify-center border px-3.5 text-[0.8rem] transition-colors ${
                     isSelected
                       ? "border-charcoal bg-charcoal text-pearl-white"
                       : v.available
-                        ? "border-warm-beige text-charcoal hover:border-charcoal"
-                        : "cursor-not-allowed border-warm-beige text-warm-gray line-through opacity-50"
+                        ? "border-warm-beige bg-pearl-white text-charcoal hover:border-charcoal"
+                        : "cursor-not-allowed border-warm-beige bg-pearl-white text-warm-gray line-through opacity-50"
                   }`}
                 >
                   {v.size}
@@ -102,7 +110,7 @@ export default function AddToCartControls({
           </div>
           {sizeError && (
             <p className="mt-2 text-[0.78rem] text-red-500">
-              Please select an available size.
+              Please select a size.
             </p>
           )}
         </div>
@@ -122,8 +130,9 @@ export default function AddToCartControls({
           <button
             type="button"
             aria-label="Increase quantity"
-            onClick={() => setQty((q) => q + 1)}
-            className="flex h-9 w-9 items-center justify-center text-base"
+            disabled={maxQty !== undefined && qty >= maxQty}
+            onClick={() => setQty((q) => (maxQty !== undefined ? Math.min(maxQty, q + 1) : q + 1))}
+            className="flex h-9 w-9 items-center justify-center text-base disabled:cursor-not-allowed disabled:opacity-40"
           >
             +
           </button>
@@ -143,7 +152,7 @@ export default function AddToCartControls({
           type="button"
           aria-label={wishlisted ? "Remove from wishlist" : "Add to wishlist"}
           aria-pressed={wishlisted}
-          onClick={() => toggleWishlist({ handle, title, price: selectedVariant?.price.amount ?? 0, image, imageLabel })}
+          onClick={() => toggleWishlist({ handle, title, price: displayPrice, image, imageLabel })}
           className="flex h-[42px] w-[42px] shrink-0 items-center justify-center border border-warm-beige"
         >
           <Heart
@@ -161,7 +170,7 @@ export default function AddToCartControls({
         <div className={styles.stickyInfo}>
           <span className={styles.stickyTitle}>{title}</span>
           <span className={styles.stickyPrice}>
-            {formatINR((selectedVariant?.price.amount ?? 0) * qty)}
+            {formatINR(displayPrice * qty)}
           </span>
         </div>
         <button

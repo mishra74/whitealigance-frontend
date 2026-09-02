@@ -167,7 +167,7 @@ export default function HeroSection() {
             </Fragment>
           ))}
         </h1>
-        <Link ref={ctaRef} href="#collections" className={styles.cta}>
+        <Link ref={ctaRef} href="/party-wear" className={styles.cta}>
           Explore the Collection
         </Link>
       </div>

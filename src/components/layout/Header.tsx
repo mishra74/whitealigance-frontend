@@ -1,17 +1,16 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { Heart, Search, ShoppingBag, User, X } from "lucide-react";
-import PlaceholderImage from "@/components/ui/PlaceholderImage";
 import { useCart } from "@/lib/cart-context";
 import { useWishlist } from "@/lib/wishlist-context";
 import styles from "./Header.module.css";
 
 const NAV_ITEMS = [
   { label: "Home", href: "/" },
-  { label: "Collections", mega: true as const },
   { label: "Party Wear", href: "/party-wear" },
   { label: "Casual Wear", href: "/casual-wear" },
   { label: "About", href: "/about" },
@@ -48,8 +47,6 @@ export default function Header() {
 
   const [scrolled, setScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
-  const [megaOpen, setMegaOpen] = useState(false);
-  const megaRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (!isHome) return;
@@ -61,7 +58,6 @@ export default function Header() {
 
   useEffect(() => {
     setMobileOpen(false);
-    setMegaOpen(false);
   }, [pathname]);
 
   useEffect(() => {
@@ -70,24 +66,6 @@ export default function Header() {
       document.body.style.overflow = "";
     };
   }, [mobileOpen]);
-
-  useEffect(() => {
-    if (!megaOpen) return;
-    const onClick = (e: MouseEvent) => {
-      if (megaRef.current && !megaRef.current.contains(e.target as Node)) {
-        setMegaOpen(false);
-      }
-    };
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") setMegaOpen(false);
-    };
-    document.addEventListener("click", onClick);
-    document.addEventListener("keydown", onKey);
-    return () => {
-      document.removeEventListener("click", onClick);
-      document.removeEventListener("keydown", onKey);
-    };
-  }, [megaOpen]);
 
   useEffect(() => {
     if (!mobileOpen) return;
@@ -101,11 +79,10 @@ export default function Header() {
   const solid = !isHome || scrolled;
 
   // Clicking a link to the page you're already on should just close the
-  // dropdown/drawer — never a reload or a no-op navigation. Clicking a
+  // mobile drawer — never a reload or a no-op navigation. Clicking a
   // different page closes it too (immediately, rather than waiting for the
   // pathname-change effect) and lets the normal navigation proceed.
   function handleNavLinkClick(e: React.MouseEvent<HTMLAnchorElement>, href: string) {
-    setMegaOpen(false);
     setMobileOpen(false);
     if (stripTrailingSlash(pathname) === stripTrailingSlash(href)) {
       e.preventDefault();
@@ -121,43 +98,31 @@ export default function Header() {
         }`}
       >
         <Link href="/" className={styles.logo}>
-          <img
+          <Image
             src="/assets/images/Logo/we24-logo-mark.png"
             alt="White Elegance 24"
+            width={713}
+            height={561}
+            priority
             className={styles.logoMark}
           />
         </Link>
 
         <nav className={styles.nav} aria-label="Primary">
-          {NAV_ITEMS.map((item) =>
-            item.mega ? (
-              <span
-                key={item.label}
-                className={styles.navLink}
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setMegaOpen((v) => !v);
-                }}
-                aria-haspopup="true"
-                aria-expanded={megaOpen}
-              >
-                {item.label}
-              </span>
-            ) : (
-              <Link
-                key={item.label}
-                href={item.href}
-                className={`${styles.navLink} ${
-                  stripTrailingSlash(pathname) === stripTrailingSlash(item.href)
-                    ? styles.navLinkActive
-                    : ""
-                }`}
-                onClick={(e) => handleNavLinkClick(e, item.href)}
-              >
-                {item.label}
-              </Link>
-            )
-          )}
+          {NAV_ITEMS.map((item) => (
+            <Link
+              key={item.label}
+              href={item.href}
+              className={`${styles.navLink} ${
+                stripTrailingSlash(pathname) === stripTrailingSlash(item.href)
+                  ? styles.navLinkActive
+                  : ""
+              }`}
+              onClick={(e) => handleNavLinkClick(e, item.href)}
+            >
+              {item.label}
+            </Link>
+          ))}
         </nav>
 
         <div className={styles.icons}>
@@ -190,40 +155,6 @@ export default function Header() {
           </button>
         </div>
       </header>
-
-      <div
-        ref={megaRef}
-        className={`${styles.mega} ${megaOpen ? styles.megaOpen : ""}`}
-      >
-        <Link
-          href="/party-wear"
-          className={styles.megaCard}
-          onClick={(e) => handleNavLinkClick(e, "/party-wear")}
-        >
-          <PlaceholderImage
-            src="/assets/images/collections/party-wear-hero.png"
-            alt="Party Wear lookbook"
-            label="Party Wear — lookbook"
-            variant="warm2"
-            className="absolute inset-0"
-          />
-          <span className={styles.megaCardLabel}>Party Wear</span>
-        </Link>
-        <Link
-          href="/casual-wear"
-          className={styles.megaCard}
-          onClick={(e) => handleNavLinkClick(e, "/casual-wear")}
-        >
-          <PlaceholderImage
-            src="/assets/images/collections/casual-wear-hero.png"
-            alt="Casual Wear lookbook"
-            label="Casual Wear — lookbook"
-            variant="warm3"
-            className="absolute inset-0"
-          />
-          <span className={styles.megaCardLabel}>Casual Wear</span>
-        </Link>
-      </div>
 
       <div
         className={`${styles.mobileNavBackdrop} ${mobileOpen ? styles.mobileNavBackdropOpen : ""}`}

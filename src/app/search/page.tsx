@@ -1,7 +1,8 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { Suspense, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import { Search as SearchIcon } from "lucide-react";
 import ProductCard from "@/components/product/ProductCard";
 import { getApiProducts } from "@/lib/api";
@@ -11,6 +12,22 @@ type Chip = "Party Wear" | "Casual Wear" | "Under ₹5,000";
 const CHIPS: Chip[] = ["Party Wear", "Casual Wear", "Under ₹5,000"];
 
 export default function SearchPage() {
+  return (
+    <Suspense fallback={null}>
+      <SearchPageInner />
+    </Suspense>
+  );
+}
+
+function SearchPageInner() {
+  const params = useSearchParams();
+  // Arriving from the mobile category nav's "All" chip (/search?all=1)
+  // should show the full catalogue immediately, not the "start typing"
+  // prompt — everything else about the page behaves exactly as before.
+  const showAll = params.get("all") === "1";
+  // "View all" from the homepage's New Arrivals / Bestsellers rails.
+  const showNew = params.get("new") === "1";
+  const showFeatured = params.get("featured") === "1";
   const [query, setQuery] = useState("");
   const [activeChip, setActiveChip] = useState<Chip | null>(null);
   const [products, setProducts] = useState<Product[]>([]);
@@ -31,7 +48,8 @@ export default function SearchPage() {
   const q = query.trim().toLowerCase();
 
   const results = useMemo(() => {
-    return products.filter((p) => {
+    const filtered = products.filter((p) => {
+      if (showFeatured && !p.tags.includes("featured")) return false;
       if (activeChip === "Party Wear" && p.collection !== "party-wear") return false;
       if (activeChip === "Casual Wear" && p.collection !== "casual-wear") return false;
       if (activeChip === "Under ₹5,000" && (p.variants[0]?.price.amount ?? 0) >= 5000)
@@ -41,7 +59,12 @@ export default function SearchPage() {
       const haystack = `${p.title} ${p.description} ${p.tags.join(" ")}`.toLowerCase();
       return haystack.includes(q);
     });
-  }, [q, activeChip, products]);
+
+    if (showNew) {
+      return [...filtered].sort((a, b) => Number(b.id) - Number(a.id));
+    }
+    return filtered;
+  }, [q, activeChip, products, showFeatured, showNew]);
 
   const matchedCollections = useMemo(() => {
     if (!q) return [];
@@ -49,7 +72,8 @@ export default function SearchPage() {
     return cols.filter((c) => collectionLabel(c).toLowerCase().includes(q));
   }, [q]);
 
-  const hasSearched = q.length > 0 || activeChip !== null;
+  const hasSearched =
+    q.length > 0 || activeChip !== null || showAll || showNew || showFeatured;
 
   return (
     <div className="mx-auto max-w-[1320px] px-14 max-[1100px]:px-8">

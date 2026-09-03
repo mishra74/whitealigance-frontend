@@ -1,10 +1,22 @@
 .hero {
   position: relative;
-  height: 100vh;
-  min-height: 680px;
+  height: clamp(260px, 78vw, 340px);
+  min-height: 260px;
   display: flex;
   align-items: center;
   overflow: hidden;
+}
+
+/* A compact wide banner instead of a full-screen hero on every breakpoint,
+   so Shop by Category / New Arrivals are visible without scrolling.
+   Mobile scales 260-340px across common phone widths (the base rule
+   above); desktop scales 380-460px, flat at each end rather than
+   tracking 100vh. */
+@media (min-width: 1101px) {
+  .hero {
+    height: clamp(380px, 32vw, 460px);
+    min-height: 380px;
+  }
 }
 
 /* bleeds past the section edges so parallax translate/zoom never exposes a gap */
@@ -20,12 +32,35 @@
   inset: 0;
 }
 
+/* Hero carousel track — 3 slides side by side, JS sets the translateX per
+   activeIndex (see HeroSection.tsx). Swipeable via touch on mobile, dots +
+   hover-revealed arrows (desktop only) elsewhere. */
+.track {
+  display: flex;
+  width: 300%;
+  height: 100%;
+  transition: transform 0.9s var(--ease-fabric);
+}
+
+.trackSlide {
+  position: relative;
+  width: 33.3333%;
+  height: 100%;
+  flex-shrink: 0;
+}
+
+/* The compact hero (see .hero above) is much wider/shallower than the
+   source footage's native 16:9 frame on every breakpoint now, so a center
+   crop shows mostly legs/dress rather than the figure's silhouette — bias
+   it upward by default. Per-slide overrides (see HeroSection.tsx) adjust
+   this further for the two collection photos. */
 .video {
   position: absolute;
   inset: 0;
   width: 100%;
   height: 100%;
   object-fit: cover;
+  object-position: center 20%;
 }
 
 .scrim {
@@ -46,6 +81,24 @@
   max-width: 620px;
   padding: 0 56px;
   color: var(--pearl-white);
+}
+
+/* Each slide's text is always mounted (so slide 0's one-time char-reveal
+   animation never has to re-fire) and cross-fades in place while the media
+   track behind it slides horizontally. Only the active one is in normal
+   flow — that's what gives .heroInner its real height. */
+.slideText {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.6s var(--ease-fabric);
+}
+
+.slideText[data-active="true"] {
+  position: relative;
+  opacity: 1;
+  pointer-events: auto;
 }
 
 @media (max-width: 1100px) {
@@ -72,6 +125,19 @@
 }
 
 .headline {
+  font-family: var(--font-body);
+  font-weight: 400;
+  font-size: clamp(0.95rem, 1.6vw, 1.3rem);
+  line-height: 1.5;
+  letter-spacing: 0.02em;
+  color: rgba(250, 249, 246, 0.82);
+}
+
+/* Same typography as .headline, for the two collection slides — plain
+   text (no per-character spans) since only slide 0 gets the letter-reveal
+   entrance animation. */
+.headlinePlain {
+  max-width: 480px;
   font-family: var(--font-body);
   font-weight: 400;
   font-size: clamp(0.95rem, 1.6vw, 1.3rem);
@@ -109,37 +175,93 @@
   color: var(--charcoal);
 }
 
+/* Mobile now has its own discovery path (search bar + category chips right
+   above the hero, bottom tab bar below) — the CTA over the video is only
+   needed on desktop, where the hero is the primary way in. */
+@media (max-width: 1100px) {
+  .cta {
+    display: none;
+  }
+}
+
+/* A "scroll for more" cue made sense on the old full-viewport hero; the
+   compact banner (every breakpoint now) doesn't need it — the next section
+   is already visible, and it would collide with the pagination dots. */
 .scrollCue {
+  display: none;
+}
+
+.arrow {
+  display: none;
+}
+
+@media (min-width: 1101px) {
+  .arrow {
+    display: flex;
+    position: absolute;
+    top: 50%;
+    z-index: 6;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    height: 44px;
+    transform: translateY(-50%);
+    border: 1px solid rgba(250, 249, 246, 0.5);
+    border-radius: 50%;
+    background: rgba(20, 17, 14, 0.25);
+    backdrop-filter: blur(6px);
+    color: var(--pearl-white);
+    cursor: pointer;
+    opacity: 0;
+    transition: opacity 0.3s var(--ease-fabric), background 0.3s var(--ease-fabric);
+  }
+
+  .hero:hover .arrow {
+    opacity: 1;
+  }
+
+  .arrow:hover {
+    background: rgba(20, 17, 14, 0.45);
+  }
+}
+
+.arrowPrev {
+  left: 24px;
+}
+
+.arrowNext {
+  right: 24px;
+}
+
+.dots {
   position: absolute;
-  bottom: 36px;
+  bottom: 16px;
   left: 50%;
+  z-index: 6;
+  display: flex;
+  gap: 8px;
   transform: translateX(-50%);
-  width: 1px;
-  height: 56px;
-  background: rgba(250, 249, 246, 0.5);
-  z-index: 5;
-  overflow: hidden;
 }
 
-.scrollCue::after {
-  content: "";
-  position: absolute;
-  top: -100%;
-  left: 0;
-  width: 100%;
-  height: 100%;
+@media (min-width: 1101px) {
+  .dots {
+    bottom: 22px;
+  }
+}
+
+.dot {
+  width: 8px;
+  height: 8px;
+  padding: 0;
+  border: none;
+  border-radius: 50%;
+  background: rgba(250, 249, 246, 0.45);
+  cursor: pointer;
+  transition: background 0.3s var(--ease-fabric), width 0.3s var(--ease-fabric);
+}
+
+.dotActive {
+  width: 22px;
+  border-radius: 4px;
   background: var(--pearl-white);
-  animation: cue 2.2s ease-in-out infinite;
-}
-
-@keyframes cue {
-  0% {
-    top: -100%;
-  }
-  60% {
-    top: 100%;
-  }
-  100% {
-    top: 100%;
-  }
 }

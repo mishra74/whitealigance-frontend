@@ -151,9 +151,18 @@
   background: var(--charcoal);
 }
 
+/* Below 1100px the header always renders in its compact "solid" look,
+   regardless of scroll position or which page it's on — MobileSearchBar
+   and MobileCategoryNav sit directly beneath it (see layout.tsx) and need
+   a header that reserves real, constant-height space rather than floating
+   transparently over the hero the way it does on desktop. */
 @media (max-width: 1100px) {
   .header {
-    padding: 14px 32px;
+    position: sticky;
+    padding: 8px 32px;
+    background: rgba(250, 249, 246, 0.96);
+    backdrop-filter: blur(14px);
+    box-shadow: 0 1px 0 var(--cream);
   }
   .solid {
     padding: 8px 32px;
@@ -163,6 +172,9 @@
   }
   .hamburger {
     display: flex;
+  }
+  .hamburger span {
+    background: var(--charcoal);
   }
   .icons {
     gap: 16px;

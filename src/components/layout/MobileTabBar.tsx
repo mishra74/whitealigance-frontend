@@ -7,7 +7,6 @@ import {
   Heart,
   Home,
   LayoutGrid,
-  Search,
   ShoppingBag,
   User,
   type LucideIcon,
@@ -25,7 +24,6 @@ interface Tab {
 const TABS: Tab[] = [
   { label: "Home", href: "/", Icon: Home },
   { label: "Collections", Icon: LayoutGrid },
-  { label: "Search", href: "/search", Icon: Search },
   { label: "Wishlist", href: "/wishlist", Icon: Heart },
   { label: "Cart", href: "/cart", Icon: ShoppingBag },
   { label: "Account", href: "/account", Icon: User },

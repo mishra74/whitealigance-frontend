@@ -6,12 +6,14 @@ import PlaceholderImage from "@/components/ui/PlaceholderImage";
 import buttons from "@/styles/buttons.module.css";
 import { useWishlist } from "@/lib/wishlist-context";
 import { useCart } from "@/lib/cart-context";
+import { useToast } from "@/lib/toast-context";
 import { formatINR } from "@/lib/format";
 import { getProductByHandle } from "@/lib/products";
 
 export default function WishlistPage() {
   const { items, remove } = useWishlist();
   const { addItem } = useCart();
+  const { showToast } = useToast();
 
   if (items.length === 0) {
     return (
@@ -57,6 +59,7 @@ export default function WishlistPage() {
       1
     );
     remove(handle);
+    showToast("Product added to cart");
   }
 
   return (

@@ -3,11 +3,14 @@ import { Cormorant_Garamond, Instrument_Sans } from "next/font/google";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 import MobileTabBar from "@/components/layout/MobileTabBar";
+import MobileSearchBar from "@/components/layout/MobileSearchBar";
+import MobileCategoryNav from "@/components/layout/MobileCategoryNav";
 import SmoothScroll from "@/components/layout/SmoothScroll";
 import { CartProvider } from "@/lib/cart-context";
 import { WishlistProvider } from "@/lib/wishlist-context";
 import { AuthProvider } from "@/lib/auth-context";
 import { AddressProvider } from "@/lib/address-context";
+import { ToastProvider } from "@/lib/toast-context";
 import "./globals.css";
 
 const cormorantGaramond = Cormorant_Garamond({
@@ -47,11 +50,15 @@ export default function RootLayout({
           <AddressProvider>
             <WishlistProvider>
               <CartProvider>
-                <SmoothScroll />
-                <Header />
-                <main className="flex-1">{children}</main>
-                <Footer />
-                <MobileTabBar />
+                <ToastProvider>
+                  <SmoothScroll />
+                  <Header />
+                  <MobileSearchBar />
+                  <MobileCategoryNav />
+                  <main className="flex-1">{children}</main>
+                  <Footer />
+                  <MobileTabBar />
+                </ToastProvider>
               </CartProvider>
             </WishlistProvider>
           </AddressProvider>

@@ -6,6 +6,7 @@ import buttons from "@/styles/buttons.module.css";
 import { useMagneticButton } from "@/hooks/useMagneticButton";
 import { useCart } from "@/lib/cart-context";
 import { useWishlist } from "@/lib/wishlist-context";
+import { useToast } from "@/lib/toast-context";
 import { formatINR } from "@/lib/format";
 import type { ProductVariant } from "../../../products";
 import styles from "./AddToCartControls.module.css";
@@ -27,6 +28,7 @@ export default function AddToCartControls({
 }: AddToCartControlsProps) {
   const { addItem } = useCart();
   const { isWishlisted, toggle: toggleWishlist } = useWishlist();
+  const { showToast } = useToast();
   const [qty, setQty] = useState(1);
   const [added, setAdded] = useState(false);
   // A single "Free Size" variant (no sizes configured for this product)
@@ -71,6 +73,7 @@ export default function AddToCartControls({
       qty
     );
     setAdded(true);
+    showToast("Product added to cart");
     window.setTimeout(() => setAdded(false), 2000);
   }
 

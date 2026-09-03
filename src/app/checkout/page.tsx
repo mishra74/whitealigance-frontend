@@ -422,6 +422,12 @@ export default function CheckoutPage() {
   const afterDiscount = Math.max(0, subtotal - couponDiscount);
   const shippingCost = afterDiscount >= FREE_SHIPPING_THRESHOLD ? 0 : FLAT_SHIPPING;
   const total = afterDiscount + shippingCost;
+  // Razorpay's checkout.js takes a moment to load after the page becomes
+  // interactive — without this, a fast click on "Pay Online" hits the
+  // !razorpayReady guard in handlePlaceOrder and shows a dead-end error
+  // instead of just working a beat later. Disabling the button until it's
+  // ready avoids that click ever landing in the first place.
+  const razorpayNotReady = paymentMethod === "online" && !razorpayReady;
 
   return (
     <div className="mx-auto max-w-[1320px] px-14 max-[1100px]:px-8">
@@ -536,16 +542,18 @@ export default function CheckoutPage() {
 
           <button
             type="submit"
-            disabled={submitting}
+            disabled={submitting || razorpayNotReady}
             className={`${buttons.btn} ${buttons.primary} ${buttons.block} mt-6 disabled:opacity-60`}
           >
             {submitting
               ? paymentMethod === "online"
                 ? "Opening Payment…"
                 : "Placing Order…"
-              : paymentMethod === "online"
-                ? "Pay Online"
-                : "Place Order"}
+              : razorpayNotReady
+                ? "Loading Payment…"
+                : paymentMethod === "online"
+                  ? "Pay Online"
+                  : "Place Order"}
           </button>
         </div>
       </form>

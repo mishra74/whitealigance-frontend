@@ -26,6 +26,22 @@
   overflow: hidden;
 }
 
+/* Fixed 140px tiles left a large empty gap on wide desktop screens (only
+   4 tiles, plenty of room left over) — stretch them to fill the row
+   edge-to-edge instead of leaving dead space or just centering small
+   tiles in a big row. Mobile keeps the fixed-width scrollable tiles. */
+@media (min-width: 1101px) {
+  .row {
+    overflow-x: visible;
+  }
+
+  .tile {
+    flex: 1 1 0;
+    width: auto;
+    height: 220px;
+  }
+}
+
 .tile::after {
   content: "";
   position: absolute;

@@ -31,6 +31,7 @@ interface ApiProduct {
   qty: number | null;
   status: number;
   is_featured: string;
+  delivery_days: number | null;
   product_images: ApiProductImage[];
   sizes?: ApiProductSize[];
 }
@@ -118,6 +119,8 @@ function normalize(product: ApiProduct): Product {
         ? "featured"
         : "normal",
     ],
+
+    deliveryDays: product.delivery_days,
   };
 }
 
@@ -267,6 +270,56 @@ export async function signup(params: {
   console.log("Signup response:", json);
 
   return json;
+}
+
+export async function apiForgotPassword(email: string) {
+  const response = await fetch(`${API_URL}/account/forgot-password`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ email }),
+  });
+
+  return response.json();
+}
+
+export async function apiResetPassword(params: {
+  email: string;
+  token: string;
+  password: string;
+  password_confirmation: string;
+}) {
+  const response = await fetch(`${API_URL}/account/reset-password`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(params),
+  });
+
+  return response.json();
+}
+
+export async function apiForgotPasswordOtp(email: string) {
+  const response = await fetch(`${API_URL}/account/forgot-password-otp`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ email }),
+  });
+
+  return response.json();
+}
+
+export async function apiResetPasswordOtp(params: {
+  email: string;
+  otp: string;
+  password: string;
+  password_confirmation: string;
+}) {
+  const response = await fetch(`${API_URL}/account/reset-password-otp`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(params),
+  });
+
+  return response.json();
 }
 
 export async function googleLogin(idToken: string) {

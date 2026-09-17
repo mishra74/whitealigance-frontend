@@ -1,6 +1,7 @@
 "use client";
 
 import { Suspense, useEffect, useState, type FormEvent } from "react";
+import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import PlaceholderImage from "@/components/ui/PlaceholderImage";
 import buttons from "@/styles/buttons.module.css";
@@ -175,7 +176,7 @@ function LoginPageInner() {
                 />
               </div>
 
-              <div className="mb-6">
+              <div className="mb-3">
                 <label className="mb-2 block text-[0.68rem] uppercase tracking-[0.14em] text-warm-gray">
                   Password
                 </label>
@@ -188,6 +189,15 @@ function LoginPageInner() {
                   className="w-full border-b border-warm-beige bg-transparent px-0.5 py-2.5 text-[0.95rem] outline-none focus:border-soft-gold"
                   placeholder="Enter your password"
                 />
+              </div>
+
+              <div className="mb-6 text-right">
+                <Link
+                  href="/forgot-password"
+                  className="text-[0.75rem] text-muted-bronze hover:text-soft-gold"
+                >
+                  Forgot password?
+                </Link>
               </div>
 
               <button

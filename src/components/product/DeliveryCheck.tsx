@@ -2,7 +2,21 @@
 
 import { useState } from "react";
 
-export default function DeliveryCheck() {
+interface DeliveryCheckProps {
+  deliveryDays: number | null;
+}
+
+function formatEstimatedDate(days: number): string {
+  const date = new Date();
+  date.setDate(date.getDate() + days);
+  return date.toLocaleDateString("en-IN", {
+    weekday: "long",
+    month: "short",
+    day: "numeric",
+  });
+}
+
+export default function DeliveryCheck({ deliveryDays }: DeliveryCheckProps) {
   const [pincode, setPincode] = useState("");
   const [checked, setChecked] = useState(false);
 
@@ -37,8 +51,21 @@ export default function DeliveryCheck() {
       </button>
       {checked && (
         <p className="mt-2.5 text-[0.8rem] text-warm-gray">
-          Live delivery estimates aren&apos;t available online yet — message
-          us on WhatsApp (+91 89768 39119) with your pincode to confirm.
+          {deliveryDays ? (
+            <>
+              Estimated delivery by{" "}
+              <span className="font-semibold text-charcoal">
+                {formatEstimatedDate(deliveryDays)}
+              </span>{" "}
+              ({deliveryDays} {deliveryDays === 1 ? "day" : "days"}).
+            </>
+          ) : (
+            <>
+              Live delivery estimates aren&apos;t available online yet —
+              message us on WhatsApp (+91 89768 39119) with your pincode to
+              confirm.
+            </>
+          )}
         </p>
       )}
     </div>

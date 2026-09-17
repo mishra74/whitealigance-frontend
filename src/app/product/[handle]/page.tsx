@@ -89,7 +89,7 @@ export default async function ProductPage({
             imageLabel={product.hasPhoto ? product.title : "Photo coming soon"}
           />
 
-          <DeliveryCheck />
+          <DeliveryCheck deliveryDays={product.deliveryDays} />
 
           <Accordion
             items={[

@@ -30,6 +30,10 @@ export interface Product {
   variants: ProductVariant[];
 
   tags: string[];
+
+  // Number of days the admin has set for delivery — null until they've set
+  // one for this product (no courier integration to compute a real estimate).
+  deliveryDays: number | null;
 }
 
 /*

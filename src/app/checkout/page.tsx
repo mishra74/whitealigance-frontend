@@ -244,6 +244,18 @@ export default function CheckoutPage() {
   const { user, hydrated } = useAuth();
 
   const [razorpayReady, setRazorpayReady] = useState(false);
+  // checkout.js can fail to load silently (ad blocker, firewall, CDN
+  // hiccup) and its onLoad then never fires, leaving the button stuck on
+  // "Loading Payment…" forever with no way out. A timeout plus an explicit
+  // onError both flip this so the customer sees a real message and can
+  // fall back to Cash on Delivery instead of being stuck.
+  const [razorpayFailed, setRazorpayFailed] = useState(false);
+
+  useEffect(() => {
+    if (razorpayReady) return;
+    const timer = setTimeout(() => setRazorpayFailed(true), 8000);
+    return () => clearTimeout(timer);
+  }, [razorpayReady]);
   const [contactEmail, setContactEmail] = useState("");
   const [contactPhone, setContactPhone] = useState("");
   const [shipping, setShipping] = useState<ShippingSelection | null>(null);
@@ -277,6 +289,14 @@ export default function CheckoutPage() {
 
     if (!shipping) {
       setSubmitError("Please add a shipping address before placing your order.");
+      return;
+    }
+
+    const invalidLine = items.find((line) => !line.sku);
+    if (invalidLine) {
+      setSubmitError(
+        `"${invalidLine.title}" is out of date in your cart — please remove it and add it again before checking out.`
+      );
       return;
     }
 
@@ -427,13 +447,15 @@ export default function CheckoutPage() {
   // !razorpayReady guard in handlePlaceOrder and shows a dead-end error
   // instead of just working a beat later. Disabling the button until it's
   // ready avoids that click ever landing in the first place.
-  const razorpayNotReady = paymentMethod === "online" && !razorpayReady;
+  const razorpayNotReady = paymentMethod === "online" && !razorpayReady && !razorpayFailed;
+  const razorpayUnavailable = paymentMethod === "online" && razorpayFailed && !razorpayReady;
 
   return (
     <div className="mx-auto max-w-[1320px] px-14 max-[1100px]:px-8">
       <Script
         src="https://checkout.razorpay.com/v1/checkout.js"
         onLoad={() => setRazorpayReady(true)}
+        onError={() => setRazorpayFailed(true)}
       />
 
       <h1 className="pt-8 pb-2.5 font-display text-[clamp(1.8rem,3.4vw,2.8rem)] font-normal">
@@ -540,16 +562,24 @@ export default function CheckoutPage() {
             <p className="mt-4 text-[0.8rem] text-red-500">{submitError}</p>
           )}
 
+          {razorpayUnavailable && (
+            <p className="mt-4 text-[0.8rem] text-red-500">
+              Online payment couldn&apos;t load. Please check your connection and reload the page, or choose Cash on Delivery below.
+            </p>
+          )}
+
           <button
             type="submit"
-            disabled={submitting || razorpayNotReady}
+            disabled={submitting || razorpayNotReady || razorpayUnavailable}
             className={`${buttons.btn} ${buttons.primary} ${buttons.block} mt-6 disabled:opacity-60`}
           >
             {submitting
               ? paymentMethod === "online"
                 ? "Opening Payment…"
                 : "Placing Order…"
-              : razorpayNotReady
+              : razorpayUnavailable
+                ? "Payment Unavailable"
+                : razorpayNotReady
                 ? "Loading Payment…"
                 : paymentMethod === "online"
                   ? "Pay Online"

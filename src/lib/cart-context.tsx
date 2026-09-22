@@ -38,7 +38,11 @@ interface CartContextValue {
 
 const CartContext = createContext<CartContextValue | null>(null);
 
-const STORAGE_KEY = "we24-cart";
+// v2: bumped from "we24-cart" so carts saved before the per-size SKU
+// fix (which could hold lines with an empty/missing sku) get discarded
+// instead of following the customer forever and failing checkout with
+// "The items.0.sku field is required."
+const STORAGE_KEY = "we24-cart-v2";
 
 function lineKey(sku: string, size: string) {
   return `${sku}__${size}`;

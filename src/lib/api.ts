@@ -248,6 +248,26 @@ export async function login(params: { email: string; password: string }) {
   return json;
 }
 
+export async function apiRequestLoginOtp(email: string) {
+  const response = await fetch(`${API_URL}/account/login-otp/request`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ email }),
+  });
+
+  return response.json();
+}
+
+export async function apiVerifyLoginOtp(params: { email: string; otp: string }) {
+  const response = await fetch(`${API_URL}/account/login-otp/verify`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(params),
+  });
+
+  return response.json();
+}
+
 export async function signup(params: {
   name: string;
   phone: string;
@@ -270,31 +290,6 @@ export async function signup(params: {
   console.log("Signup response:", json);
 
   return json;
-}
-
-export async function apiForgotPassword(email: string) {
-  const response = await fetch(`${API_URL}/account/forgot-password`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ email }),
-  });
-
-  return response.json();
-}
-
-export async function apiResetPassword(params: {
-  email: string;
-  token: string;
-  password: string;
-  password_confirmation: string;
-}) {
-  const response = await fetch(`${API_URL}/account/reset-password`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(params),
-  });
-
-  return response.json();
 }
 
 export async function apiForgotPasswordOtp(email: string) {

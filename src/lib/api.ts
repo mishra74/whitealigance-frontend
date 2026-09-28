@@ -29,6 +29,7 @@ interface ApiProduct {
   sku: string;
   price: number | string;
   qty: number | null;
+  track_qty: string;
   status: number;
   is_featured: string;
   delivery_days: number | null;
@@ -94,25 +95,49 @@ function normalize(product: ApiProduct): Product {
 
     images,
 
-    // Every product always shows the full S/M/L/XL/XXL/XXXL row, regardless
-    // of whether the admin has configured any sizes for it yet — sizes with
-    // no matching ProductSize row (or zero stock) show disabled rather than
-    // being left off. This intentionally makes an unsized product's sizes
-    // all-disabled (not purchasable) rather than inventing availability
-    // that hasn't actually been confirmed in the admin panel.
-    variants: ALL_SIZES.map((size) => {
-      const configured = product.sizes?.find((s) => s.size === size);
-      return {
-        size,
-        sku: configured?.sku ?? "",
-        price: {
-          amount: Number(product.price),
-          currencyCode: "INR",
-        },
-        inventoryQuantity: configured?.qty ?? 0,
-        available: product.status === 1 && !!configured && configured.qty > 0,
-      };
-    }),
+    // The admin's "Sizes & Stock" panel lets a product opt out of sizing
+    // entirely (e.g. a saree, dupatta, or anything that isn't cut to a
+    // size) by leaving every size checkbox unchecked — that product has no
+    // ProductSize rows at all. For that case this must be a single "Free
+    // Size" variant backed by the product's own sku/qty, not the padded
+    // S/M/L/XL/XXL/XXXL row below: padding it would leave every size
+    // showing "unavailable" with no way to buy the product at all.
+    //
+    // Once at least one size is configured, every product always shows the
+    // full S/M/L/XL/XXL/XXXL row — sizes with no matching ProductSize row
+    // (or zero stock) show disabled rather than being left off. This
+    // intentionally makes an unconfigured size disabled (not purchasable)
+    // rather than inventing availability that hasn't actually been
+    // confirmed in the admin panel.
+    variants:
+      !product.sizes || product.sizes.length === 0
+        ? [
+            {
+              size: "Free Size",
+              sku: product.sku,
+              price: {
+                amount: Number(product.price),
+                currencyCode: "INR",
+              },
+              inventoryQuantity: product.qty ?? 0,
+              available:
+                product.status === 1 &&
+                (product.track_qty !== "Yes" || (product.qty ?? 0) > 0),
+            },
+          ]
+        : ALL_SIZES.map((size) => {
+            const configured = product.sizes?.find((s) => s.size === size);
+            return {
+              size,
+              sku: configured?.sku ?? "",
+              price: {
+                amount: Number(product.price),
+                currencyCode: "INR",
+              },
+              inventoryQuantity: configured?.qty ?? 0,
+              available: product.status === 1 && !!configured && configured.qty > 0,
+            };
+          }),
 
     tags: [
       product.is_featured === "Yes"
